@@ -5,6 +5,7 @@ import { useEditorStore } from "../store/editor";
 import { lspClient, monacoLangToLsp } from "./lspClient";
 import { registerHoverProvider } from "./providers/hover";
 import { registerCompletionProvider } from "./providers/completions";
+import { registerInlineCompletionProvider } from "./providers/inlineCompletions";
 import { registerDefinitionProvider } from "./providers/definitions";
 import { registerDiagnosticsHandler } from "./providers/diagnostics";
 
@@ -36,6 +37,7 @@ export function MonacoEditor() {
     providersRegistered = true;
     registerHoverProvider(monacoInstance);
     registerCompletionProvider(monacoInstance);
+    registerInlineCompletionProvider(monacoInstance);
     registerDefinitionProvider(monacoInstance);
     registerDiagnosticsHandler(monacoInstance);
   }, [monacoInstance]);
@@ -124,6 +126,7 @@ export function MonacoEditor() {
         wordWrap: "off",
         renderWhitespace: "none",
         lineNumbersMinChars: 3,
+        inlineSuggest: { enabled: true, mode: "prefix" },
       }}
     />
   );
