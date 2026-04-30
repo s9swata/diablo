@@ -65,5 +65,7 @@ export function registerInlineCompletionProvider(monaco: typeof Monaco) {
     },
 
     freeInlineCompletions() {},
-  });
+    // Monaco runtime calls disposeInlineCompletions in newer builds despite missing from types
+    ...({ disposeInlineCompletions() {} } as object),
+  } as Monaco.languages.InlineCompletionsProvider);
 }
