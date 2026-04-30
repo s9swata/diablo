@@ -1,0 +1,12 @@
+app/src/editor/providers/definitions.ts
+app/src/store/editor.ts
+gateway/src/types.ts
+gateway/src/index.ts
+gateway/src/routes/apply.ts
+gateway/src/routes/chat.ts
+gateway/src/routes/completions.ts
+gateway/src/routes/embed.ts
+SUMMARY.md
+README.md
+PLAN.md
+raw/tauri-v2.txt

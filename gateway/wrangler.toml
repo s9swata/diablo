@@ -1,0 +1,10 @@
+name = "diablo-gateway"
+main = "src/index.ts"
+compatibility_date = "2025-01-01"
+
+[ai]
+binding = "AI"
+
+[[kv_namespaces]]
+binding = "USAGE_KV"
+id = "1fbe159f201b4e49a7e9aadb8abc87c1"

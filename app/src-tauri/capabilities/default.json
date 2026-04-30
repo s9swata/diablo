@@ -1,0 +1,33 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Default capabilities for Diablo",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "shell:allow-open",
+    "dialog:allow-open",
+    {
+      "identifier": "fs:allow-read-text-file",
+      "allow": [{ "path": "**" }]
+    },
+    {
+      "identifier": "fs:allow-write-text-file",
+      "allow": [{ "path": "**" }]
+    },
+    {
+      "identifier": "fs:allow-read-dir",
+      "allow": [{ "path": "**" }]
+    },
+    {
+      "identifier": "fs:allow-mkdir",
+      "allow": [{ "path": "**" }]
+    },
+    {
+      "identifier": "fs:allow-exists",
+      "allow": [{ "path": "**" }]
+    },
+    "fs:allow-watch",
+    "fs:allow-unwatch"
+  ]
+}
