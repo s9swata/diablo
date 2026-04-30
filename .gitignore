@@ -4,3 +4,5 @@ node_modules/
 dist/
 target/
 *.lock.bak
+.graphify_chunk*.txt
+graphify-out/
