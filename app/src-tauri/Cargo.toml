@@ -26,3 +26,6 @@ anyhow = "1"
 notify = { version = "6", features = ["macos_fsevent"] }
 walkdir = "2"
 ignore = "0.4"
+
+[features]
+test-lsp = []

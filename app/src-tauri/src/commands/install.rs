@@ -24,6 +24,7 @@ fn emit(app: &AppHandle, lang: &str, msg: &str, progress: Option<f32>) {
     );
 }
 
+#[allow(dead_code)]
 fn home_dir(app: &AppHandle) -> Option<PathBuf> {
     app.path().home_dir().ok()
 }
@@ -86,12 +87,12 @@ async fn ensure_node(app: &AppHandle, servers_dir: &Path) -> Result<PathBuf> {
     }
 
     if let Some(p) = find_binary_in_dir("node", servers_dir).await {
-        return Ok(p.into());;
+        return Ok(p.into());
     }
 
     emit(app, "node", "Installing Node.js...", None);
 
-    let (url, archive_type) = if cfg!(target_os = "macos") {
+    let (url, _archive_type) = if cfg!(target_os = "macos") {
         ("https://nodejs.org/dist/v20.18.0/node-v20.18.0-darwin-arm64.tar.gz", "tar")
     } else {
         ("https://nodejs.org/dist/v20.18.0/node-v20.18.0-linux-x64.tar.gz", "tar")
@@ -138,7 +139,7 @@ async fn ensure_rustup(app: &AppHandle, servers_dir: &Path) -> Result<PathBuf> {
     }
 
     if let Some(p) = find_binary_in_dir("rustup", servers_dir).await {
-        return Ok(p.into());;
+        return Ok(p.into());
     }
 
     emit(app, "rust", "Installing Rust toolchain...", None);
@@ -245,7 +246,7 @@ async fn ensure_rust_analyzer(app: &AppHandle, servers_dir: &Path) -> Result<Ser
         .spawn()?;
     let _ = child.wait().await?;
 
-    let status = Command::new("tar")
+    let _status = Command::new("tar")
         .args(["-xzf", &archive.to_string_lossy(), "-C", &extract_dir.to_string_lossy()])
         .status()
         .await?;
@@ -299,7 +300,7 @@ async fn ensure_typescript_server(app: &AppHandle, servers_dir: &Path) -> Result
     emit(app, "typescript", "Installing typescript-language-server...", None);
 
     let packages = ["typescript-language-server", "typescript"];
-    let npx = npm.parent().map(|p| p.join("npx")).unwrap_or_else(|| PathBuf::from("npx"));
+    let _npx = npm.parent().map(|p| p.join("npx")).unwrap_or_else(|| PathBuf::from("npx"));
 
     for pkg in &packages {
         let status = Command::new(&npm)
@@ -406,7 +407,7 @@ async fn ensure_clangd(app: &AppHandle, servers_dir: &Path) -> Result<ServerSpec
 
     tokio::fs::create_dir_all(&extract_dir).await?;
 
-    let status = Command::new("tar")
+    let _status = Command::new("tar")
         .args(["-xf", &archive.to_string_lossy(), "-C", &extract_dir.to_string_lossy()])
         .status()
         .await?;
