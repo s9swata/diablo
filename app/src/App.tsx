@@ -360,8 +360,14 @@ export default function App() {
 
   async function confirmNewFile(name: string) {
     setShowNewFileModal(false);
-    const root = useEditorStore.getState().workspaceRoot;
-    if (!root) return;
+    let root = useEditorStore.getState().workspaceRoot;
+    if (!root) {
+      const selected = await open({ directory: true, multiple: false });
+      if (typeof selected !== "string") return;
+      setWorkspaceRoot(selected);
+      await invoke("fs_watch", { path: selected });
+      root = selected;
+    }
     const filePath = `${root}/${name}`;
     await invoke("fs_write", { path: filePath, content: "" });
     addFile(filePath);
