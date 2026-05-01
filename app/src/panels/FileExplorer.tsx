@@ -100,12 +100,12 @@ function GitDecoratedName({ name, path, isDir }: { name: string; path: string; i
   }
 
   return (
-    <span style={{ fontSize: 12, overflow: "hidden", textOverflow: "ellipsis", display: "flex", alignItems: "center", gap: 4, flex: 1, minWidth: 0 }}>
+    <span style={{ fontSize: 12, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "space-between", flex: 1, minWidth: 0 }}>
       <span style={{ overflow: "hidden", textOverflow: "ellipsis", color: badge ? badgeColor : undefined }}>
         {name}
       </span>
       {badge && (
-        <span style={{ color: badgeColor, fontSize: 10, fontWeight: 600, flexShrink: 0 }}>
+        <span style={{ color: badgeColor, fontSize: 10, fontWeight: 600, flexShrink: 0, paddingLeft: 6 }}>
           {badge}
         </span>
       )}
@@ -190,9 +190,6 @@ function EntryRow({
         onMouseEnter={(e) => { if (!isActive) (e.currentTarget as HTMLDivElement).style.background = "#2a2d2e"; }}
         onMouseLeave={(e) => { if (!isActive) (e.currentTarget as HTMLDivElement).style.background = "transparent"; }}
       >
-        <span style={{ width: 10, flexShrink: 0, fontSize: 9, color: "#666", display: "flex", alignItems: "center" }}>
-          {entry.is_dir ? (open ? "▾" : "▸") : ""}
-        </span>
         <FileIcon name={entry.name} isDir={entry.is_dir} open={open} />
         {isRenaming ? (
           <input

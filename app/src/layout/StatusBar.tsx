@@ -116,14 +116,14 @@ export function StatusBar({
         </NavBtn>
 
         {lspProgress && (
-          <span className="flex items-center gap-2 text-accent" style={{ marginLeft: 8 }}>
+          <span className="flex items-center text-accent" style={{ marginLeft: 8, gap: 8 }}>
             <span className="animate-spin">●</span> {lspProgress}
           </span>
         )}
       </div>
 
       {/* Right: cursor position, encoding, language */}
-      <div className="flex items-center gap-4 whitespace-nowrap">
+      <div className="flex items-center whitespace-nowrap" style={{ gap: 16 }}>
         {cursorPos && (
           <span className="hover:text-text-main cursor-pointer transition-colors">
             Ln {cursorPos.line}, Col {cursorPos.col}

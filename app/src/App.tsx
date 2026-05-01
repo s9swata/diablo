@@ -13,9 +13,7 @@ import { MenuBar } from "./layout/MenuBar";
 import { StatusBar } from "./layout/StatusBar";
 import { Breadcrumb } from "./layout/Breadcrumb";
 import { TabBar } from "./layout/TabBar";
-
-const btnClass =
-  "bg-primary text-white border-none rounded-sm px-2.5 py-1 text-xs cursor-pointer hover:opacity-90 transition-opacity";
+import { Button, Modal } from "./ui/primitives";
 
 function WelcomeScreen({
   onOpenFolder,
@@ -25,32 +23,24 @@ function WelcomeScreen({
   onNewFile: () => void;
 }) {
   return (
-    <div className="flex-1 flex flex-col items-center justify-center text-text-muted gap-8 select-none h-full bg-bg-app">
+    <div className="flex-1 flex flex-col items-center justify-center text-text-muted select-none bg-bg-app" style={{ gap: 32, height: "100%" }}>
       <div className="text-center">
         <div className="text-4xl font-bold text-accent tracking-tight">
           Diablo
         </div>
-        <div className="text-xs text-text-muted mt-1 opacity-80">
+        <div className="text-xs text-text-muted opacity-80" style={{ marginTop: 4 }}>
           Code Editor
         </div>
       </div>
-      <div className="flex gap-3">
-        <button
-          onClick={onOpenFolder}
-          className={`${btnClass} px-4 py-2 text-[13px]`}
-          style={{ padding: "4px 4px" }}
-        >
+      <div className="flex" style={{ gap: 12 }}>
+        <Button onClick={onOpenFolder} style={{ padding: "4px 16px", fontSize: 13 }}>
           Open Folder
-        </button>
-        <button
-          onClick={onNewFile}
-          className={`${btnClass} px-4 py-2 text-[13px] !bg-bg-sidebar !text-text-main hover:!bg-hover border border-border-subtle`}
-          style={{ padding: "4px 4px" }}
-        >
+        </Button>
+        <Button variant="ghost" onClick={onNewFile} style={{ padding: "4px 16px", fontSize: 13 }}>
           New File
-        </button>
+        </Button>
       </div>
-      <div className="grid grid-cols-[auto_auto] gap-x-6 gap-y-1.5 text-sm text-text-muted">
+      <div className="grid grid-cols-[auto_auto] text-sm text-text-muted" style={{ columnGap: 24, rowGap: 6 }}>
         {[
           ["Open Folder", "⌘ + O"],
           ["New File", "⌘ + N"],
@@ -88,13 +78,10 @@ function NewFileModal({
     if (trimmed) onConfirm(trimmed);
   }
   return (
-    <div
-      className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999]"
-      onClick={onCancel}
-    >
+    <Modal onClose={onCancel}>
       <div
-        className="bg-bg-app border border-border-subtle rounded-md p-4 min-w-[320px] flex flex-col gap-2.5 shadow-xl"
-        onClick={(e) => e.stopPropagation()}
+        className="bg-bg-app border border-border-subtle rounded-md flex flex-col shadow-xl"
+        style={{ padding: 16, minWidth: 320, gap: 10 }}
       >
         <div className="text-[13px] text-text-main">New File</div>
         <input
@@ -106,21 +93,15 @@ function NewFileModal({
             if (e.key === "Escape") onCancel();
           }}
           placeholder="filename.ts"
-          className="bg-bg-sidebar border border-border-subtle rounded-sm text-white text-[13px] px-2 py-1 outline-none focus:border-text-muted"
+          className="bg-bg-sidebar border border-border-subtle rounded-sm text-white text-[13px] outline-none focus:border-text-muted"
+          style={{ padding: "4px 8px" }}
         />
-        <div className="flex gap-2 justify-end mt-1">
-          <button
-            onClick={onCancel}
-            className={`${btnClass} !bg-bg-sidebar hover:!bg-hover border border-border-subtle !text-text-main`}
-          >
-            Cancel
-          </button>
-          <button onClick={submit} className={btnClass}>
-            Create
-          </button>
+        <div className="flex justify-end" style={{ gap: 8, marginTop: 4 }}>
+          <Button variant="ghost" onClick={onCancel}>Cancel</Button>
+          <Button onClick={submit}>Create</Button>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 }
 
@@ -136,13 +117,10 @@ function DirtyCloseModal({
   onCancel: () => void;
 }) {
   return (
-    <div
-      className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999]"
-      onClick={onCancel}
-    >
+    <Modal onClose={onCancel}>
       <div
-        className="bg-bg-app border border-border-subtle rounded-md p-5 min-w-[360px] flex flex-col gap-3.5 shadow-xl"
-        onClick={(e) => e.stopPropagation()}
+        className="bg-bg-app border border-border-subtle rounded-md flex flex-col shadow-xl"
+        style={{ padding: 20, minWidth: 360, gap: 14 }}
       >
         <div className="text-[13px] text-text-main font-semibold">
           Unsaved Changes
@@ -151,37 +129,22 @@ function DirtyCloseModal({
           <strong className="text-text-main">{fileName}</strong> has unsaved
           changes. Save before closing?
         </div>
-        <div className="flex gap-2 justify-end mt-1">
-          <button
-            onClick={onCancel}
-            className={`${btnClass} !bg-bg-sidebar hover:!bg-hover border border-border-subtle !text-text-main`}
-          >
-            Cancel
-          </button>
-          <button
-            onClick={onDiscardAndClose}
-            className={`${btnClass} !bg-red-900/80 hover:!bg-red-800`}
-          >
-            Don't Save
-          </button>
-          <button onClick={onSaveAndClose} className={btnClass}>
-            Save
-          </button>
+        <div className="flex justify-end" style={{ gap: 8, marginTop: 4 }}>
+          <Button variant="ghost" onClick={onCancel}>Cancel</Button>
+          <Button variant="danger" onClick={onDiscardAndClose}>Don't Save</Button>
+          <Button onClick={onSaveAndClose}>Save</Button>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 }
 
 function AboutModal({ onClose }: { onClose: () => void }) {
   return (
-    <div
-      className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999]"
-      onClick={onClose}
-    >
+    <Modal onClose={onClose}>
       <div
-        className="bg-bg-app border border-border-subtle rounded-md p-7 min-w-[280px] flex flex-col gap-2.5 items-center shadow-xl"
-        onClick={(e) => e.stopPropagation()}
+        className="bg-bg-app border border-border-subtle rounded-md flex flex-col items-center shadow-xl"
+        style={{ padding: 28, minWidth: 280, gap: 10 }}
       >
         <div className="text-3xl font-bold text-accent">Diablo</div>
         <div className="text-xs text-text-muted">Version 0.1.0</div>
@@ -190,11 +153,11 @@ function AboutModal({ onClose }: { onClose: () => void }) {
           <br />
           built with Tauri + Monaco
         </div>
-        <button onClick={onClose} className={`${btnClass} mt-2 px-4`}>
+        <Button onClick={onClose} style={{ marginTop: 8, padding: "4px 16px" }}>
           Close
-        </button>
+        </Button>
       </div>
-    </div>
+    </Modal>
   );
 }
 
@@ -564,7 +527,8 @@ export default function App() {
             </div>
             <div
               onMouseDown={startDrag}
-              className="w-1 cursor-col-resize bg-transparent hover:bg-primary shrink-0 z-10 transition-colors"
+              style={{ width: 4 }}
+              className="cursor-col-resize bg-transparent hover:bg-primary shrink-0 z-10 transition-colors"
             />
           </>
         )}

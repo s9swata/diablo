@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useEditorStore } from "../store/editor";
 import { MagnifyingGlass } from "@phosphor-icons/react";
+import { Select } from "../ui/primitives";
 import {
   TypeScript, Reactts, Js, Reactjs, Rust, Python, Go, Markdown, Yaml, Shell,
   SVG as SvgIcon, XML, Lua, Ruby, Swift, Kotlin, Java, PHP, Csharp, Dart, Scala,
@@ -76,7 +77,7 @@ export function TabBar({ onCloseRequest, searchTabOpen, searchActive, onSearchTa
   const inactiveTabStyle = "bg-transparent text-text-muted hover:bg-hover border-t border-t-transparent";
 
   return (
-    <div data-tauri-drag-region className="flex items-center h-9 bg-bg-app border-b border-border-subtle shrink-0">
+    <div data-tauri-drag-region className="flex items-center bg-bg-app border-b border-border-subtle shrink-0" style={{ height: 36 }}>
       <div
         ref={tabsRef}
         className="flex items-center flex-1 h-full overflow-x-auto overflow-y-hidden select-none"
@@ -144,32 +145,20 @@ export function TabBar({ onCloseRequest, searchTabOpen, searchActive, onSearchTa
         })}
       </div>
       <div style={{ gap: 12, padding: "0 12px" }} className="flex items-center shrink-0">
-        <select
-          value={settings.theme}
-          onChange={(e) => updateSettings({ theme: e.target.value as "vs-dark" | "light" })}
-          className="bg-bg-sidebar text-text-muted border border-border-subtle rounded-sm px-1.5 py-0.5 text-[11px] cursor-pointer outline-none focus:border-text-muted"
-        >
+        <Select value={settings.theme} onChange={(e) => updateSettings({ theme: e.target.value as "vs-dark" | "light" })}>
           <option value="vs-dark">Dark</option>
           <option value="light">Light</option>
-        </select>
-        <select
-          value={settings.fontSize}
-          onChange={(e) => updateSettings({ fontSize: Number(e.target.value) })}
-          className="bg-bg-sidebar text-text-muted border border-border-subtle rounded-sm px-1.5 py-0.5 text-[11px] cursor-pointer outline-none focus:border-text-muted"
-        >
+        </Select>
+        <Select value={settings.fontSize} onChange={(e) => updateSettings({ fontSize: Number(e.target.value) })}>
           {[11, 12, 13, 14, 15, 16, 18].map((s) => (
             <option key={s} value={s}>{s}px</option>
           ))}
-        </select>
-        <select
-          value={settings.tabSize}
-          onChange={(e) => updateSettings({ tabSize: Number(e.target.value) })}
-          className="bg-bg-sidebar text-text-muted border border-border-subtle rounded-sm px-1.5 py-0.5 text-[11px] cursor-pointer outline-none focus:border-text-muted"
-        >
+        </Select>
+        <Select value={settings.tabSize} onChange={(e) => updateSettings({ tabSize: Number(e.target.value) })}>
           {[2, 4].map((s) => (
             <option key={s} value={s}>{s} spaces</option>
           ))}
-        </select>
+        </Select>
       </div>
     </div>
   );

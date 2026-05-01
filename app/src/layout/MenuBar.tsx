@@ -29,8 +29,8 @@ function PanelBtn({
     <button
       title={title}
       onClick={onClick}
-      style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
-      className={`w-7 h-7 flex items-center justify-center rounded-sm transition-colors cursor-default ${
+      style={{ WebkitAppRegion: "no-drag", width: 28, height: 28 } as React.CSSProperties}
+      className={`flex items-center justify-center rounded-sm transition-colors cursor-default ${
         active
           ? "text-accent bg-hover"
           : "text-text-muted hover:bg-hover hover:text-text-main"
@@ -46,8 +46,8 @@ export function MenuBar({ activeFileName, panels }: TitleBarProps) {
   return (
     <div
       data-tauri-drag-region
-      className="relative flex items-center h-9 bg-bg-app border-b border-border-subtle shrink-0 select-none"
-      style={{ WebkitAppRegion: "drag" } as React.CSSProperties}
+      className="relative flex items-center bg-bg-app border-b border-border-subtle shrink-0 select-none"
+      style={{ height: 36, WebkitAppRegion: "drag" } as React.CSSProperties}
     >
       {/* Traffic-light safe zone */}
       <div
