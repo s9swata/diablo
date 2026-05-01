@@ -1,25 +1,53 @@
 import { useEffect, useRef } from "react";
 import { useEditorStore } from "../store/editor";
+import { MagnifyingGlass } from "@phosphor-icons/react";
 import {
-  FileTs, FileTsx, FileJs, FileJsx, FileCss, FileHtml, FileMd, FileRs, FilePy, File,
-  MagnifyingGlass,
-} from "@phosphor-icons/react";
+  TypeScript, Reactts, Js, Reactjs, Rust, Python, Go, Markdown, Yaml, Shell,
+  SVG as SvgIcon, XML, Lua, Ruby, Swift, Kotlin, Java, PHP, Csharp, Dart, Scala,
+  CLang, Cplus, H, Nim, Zig, Julia, Haskell, Elixir, Erlang, Clojure, Fsharp,
+  Document, Text, CodeBlue, CodeOrange,
+} from "@react-symbols/icons";
 
 function TabIcon({ name }: { name: string }) {
   const ext = name.includes(".") ? name.split(".").pop()!.toLowerCase() : "";
-  const size = 13;
-  const style: React.CSSProperties = { flexShrink: 0 };
+  const p = { width: 14, height: 14, style: { flexShrink: 0 } as React.CSSProperties };
   switch (ext) {
-    case "ts":   return <FileTs   size={size} color="#3178c6" style={style} />;
-    case "tsx":  return <FileTsx  size={size} color="#3178c6" style={style} />;
-    case "js":   return <FileJs   size={size} color="#f7df1e" style={style} />;
-    case "jsx":  return <FileJsx  size={size} color="#f7df1e" style={style} />;
-    case "css":  return <FileCss  size={size} color="#42a5f5" style={style} />;
-    case "html": return <FileHtml size={size} color="#e34c26" style={style} />;
-    case "md":   return <FileMd   size={size} color="#83a598" style={style} />;
-    case "rs":   return <FileRs   size={size} color="#ce412b" style={style} />;
-    case "py":   return <FilePy   size={size} color="#3572a5" style={style} />;
-    default:     return <File     size={size} color="#8b8b8b" style={style} />;
+    case "ts":                    return <TypeScript {...p} />;
+    case "tsx":                   return <Reactts {...p} />;
+    case "js":   case "mjs":      return <Js {...p} />;
+    case "jsx":                   return <Reactjs {...p} />;
+    case "rs":                    return <Rust {...p} />;
+    case "py":                    return <Python {...p} />;
+    case "go":                    return <Go {...p} />;
+    case "md":   case "mdx":      return <Markdown {...p} />;
+    case "yaml": case "yml":      return <Yaml {...p} />;
+    case "sh":   case "bash": case "zsh": return <Shell {...p} />;
+    case "svg":                   return <SvgIcon {...p} />;
+    case "xml":                   return <XML {...p} />;
+    case "lua":                   return <Lua {...p} />;
+    case "rb":                    return <Ruby {...p} />;
+    case "swift":                 return <Swift {...p} />;
+    case "kt":                    return <Kotlin {...p} />;
+    case "java":                  return <Java {...p} />;
+    case "php":                   return <PHP {...p} />;
+    case "cs":                    return <Csharp {...p} />;
+    case "dart":                  return <Dart {...p} />;
+    case "scala":                 return <Scala {...p} />;
+    case "c":                     return <CLang {...p} />;
+    case "cpp":  case "cc":       return <Cplus {...p} />;
+    case "h":    case "hpp":      return <H {...p} />;
+    case "nim":                   return <Nim {...p} />;
+    case "zig":                   return <Zig {...p} />;
+    case "jl":                    return <Julia {...p} />;
+    case "hs":                    return <Haskell {...p} />;
+    case "ex":   case "exs":      return <Elixir {...p} />;
+    case "erl":                   return <Erlang {...p} />;
+    case "clj":                   return <Clojure {...p} />;
+    case "fs":   case "fsx":      return <Fsharp {...p} />;
+    case "css":  case "scss": case "less": return <CodeBlue {...p} />;
+    case "html": case "htm":      return <CodeOrange {...p} />;
+    case "txt":                   return <Text {...p} />;
+    default:                      return <Document {...p} />;
   }
 }
 

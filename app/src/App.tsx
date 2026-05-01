@@ -14,25 +14,52 @@ import { StatusBar } from "./layout/StatusBar";
 import { Breadcrumb } from "./layout/Breadcrumb";
 import { TabBar } from "./layout/TabBar";
 
+const btnClass =
+  "bg-primary text-white border-none rounded-sm px-2.5 py-1 text-xs cursor-pointer hover:opacity-90 transition-opacity";
 
-
-const btnClass = "bg-primary text-white border-none rounded-sm px-2.5 py-1 text-xs cursor-pointer hover:opacity-90 transition-opacity";
-
-function WelcomeScreen({ onOpenFolder, onNewFile }: { onOpenFolder: () => void; onNewFile: () => void }) {
+function WelcomeScreen({
+  onOpenFolder,
+  onNewFile,
+}: {
+  onOpenFolder: () => void;
+  onNewFile: () => void;
+}) {
   return (
     <div className="flex-1 flex flex-col items-center justify-center text-text-muted gap-8 select-none h-full bg-bg-app">
       <div className="text-center">
-        <div className="text-4xl font-bold text-accent tracking-tight">Diablo</div>
-        <div className="text-xs text-text-muted mt-1 opacity-80">Code Editor</div>
+        <div className="text-4xl font-bold text-accent tracking-tight">
+          Diablo
+        </div>
+        <div className="text-xs text-text-muted mt-1 opacity-80">
+          Code Editor
+        </div>
       </div>
       <div className="flex gap-3">
-        <button onClick={onOpenFolder} className={`${btnClass} px-4 py-2 text-[13px]`}>Open Folder</button>
-        <button onClick={onNewFile} className={`${btnClass} px-4 py-2 text-[13px] !bg-bg-sidebar !text-text-main hover:!bg-hover border border-border-subtle`}>New File</button>
+        <button
+          onClick={onOpenFolder}
+          className={`${btnClass} px-4 py-2 text-[13px]`}
+          style={{ padding: "4px 4px" }}
+        >
+          Open Folder
+        </button>
+        <button
+          onClick={onNewFile}
+          className={`${btnClass} px-4 py-2 text-[13px] !bg-bg-sidebar !text-text-main hover:!bg-hover border border-border-subtle`}
+          style={{ padding: "4px 4px" }}
+        >
+          New File
+        </button>
       </div>
-      <div className="grid grid-cols-[auto_auto] gap-x-6 gap-y-1.5 text-xs text-text-muted">
+      <div className="grid grid-cols-[auto_auto] gap-x-6 gap-y-1.5 text-sm text-text-muted">
         {[
-          ["Open Folder", "⌘O"], ["New File", "⌘N"], ["Save", "⌘S"], ["Close Tab", "⌘W"],
-          ["Toggle Sidebar", "⌘B"], ["Find", "⌘F"], ["Zoom In / Out", "⌘= / ⌘-"], ["Word Wrap", "⌥Z"],
+          ["Open Folder", "⌘ + O"],
+          ["New File", "⌘ + N"],
+          ["Save", "⌘ + S"],
+          ["Close Tab", "⌘ + W"],
+          ["Toggle Sidebar", "⌘ + B"],
+          ["Find", "⌘ + F"],
+          ["Zoom In / Out", "⌘ + = / ⌘ + -"],
+          ["Word Wrap", "⌥ + Z"],
         ].map(([label, key]) => (
           <div className="contents" key={label}>
             <span className="text-right opacity-80">{label}</span>
@@ -44,37 +71,102 @@ function WelcomeScreen({ onOpenFolder, onNewFile }: { onOpenFolder: () => void; 
   );
 }
 
-function NewFileModal({ onConfirm, onCancel }: { onConfirm: (name: string) => void; onCancel: () => void }) {
+function NewFileModal({
+  onConfirm,
+  onCancel,
+}: {
+  onConfirm: (name: string) => void;
+  onCancel: () => void;
+}) {
   const [name, setName] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
-  useEffect(() => { inputRef.current?.focus(); }, []);
-  function submit() { const trimmed = name.trim(); if (trimmed) onConfirm(trimmed); }
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
+  function submit() {
+    const trimmed = name.trim();
+    if (trimmed) onConfirm(trimmed);
+  }
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999]" onClick={onCancel}>
-      <div className="bg-bg-app border border-border-subtle rounded-md p-4 min-w-[320px] flex flex-col gap-2.5 shadow-xl" onClick={(e) => e.stopPropagation()}>
+    <div
+      className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999]"
+      onClick={onCancel}
+    >
+      <div
+        className="bg-bg-app border border-border-subtle rounded-md p-4 min-w-[320px] flex flex-col gap-2.5 shadow-xl"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="text-[13px] text-text-main">New File</div>
-        <input ref={inputRef} value={name} onChange={(e) => setName(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") submit(); if (e.key === "Escape") onCancel(); }} placeholder="filename.ts" className="bg-bg-sidebar border border-border-subtle rounded-sm text-white text-[13px] px-2 py-1 outline-none focus:border-text-muted" />
+        <input
+          ref={inputRef}
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") submit();
+            if (e.key === "Escape") onCancel();
+          }}
+          placeholder="filename.ts"
+          className="bg-bg-sidebar border border-border-subtle rounded-sm text-white text-[13px] px-2 py-1 outline-none focus:border-text-muted"
+        />
         <div className="flex gap-2 justify-end mt-1">
-          <button onClick={onCancel} className={`${btnClass} !bg-bg-sidebar hover:!bg-hover border border-border-subtle !text-text-main`}>Cancel</button>
-          <button onClick={submit} className={btnClass}>Create</button>
+          <button
+            onClick={onCancel}
+            className={`${btnClass} !bg-bg-sidebar hover:!bg-hover border border-border-subtle !text-text-main`}
+          >
+            Cancel
+          </button>
+          <button onClick={submit} className={btnClass}>
+            Create
+          </button>
         </div>
       </div>
     </div>
   );
 }
 
-function DirtyCloseModal({ fileName, onSaveAndClose, onDiscardAndClose, onCancel }: { fileName: string; onSaveAndClose: () => void; onDiscardAndClose: () => void; onCancel: () => void; }) {
+function DirtyCloseModal({
+  fileName,
+  onSaveAndClose,
+  onDiscardAndClose,
+  onCancel,
+}: {
+  fileName: string;
+  onSaveAndClose: () => void;
+  onDiscardAndClose: () => void;
+  onCancel: () => void;
+}) {
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999]" onClick={onCancel}>
-      <div className="bg-bg-app border border-border-subtle rounded-md p-5 min-w-[360px] flex flex-col gap-3.5 shadow-xl" onClick={(e) => e.stopPropagation()}>
-        <div className="text-[13px] text-text-main font-semibold">Unsaved Changes</div>
+    <div
+      className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999]"
+      onClick={onCancel}
+    >
+      <div
+        className="bg-bg-app border border-border-subtle rounded-md p-5 min-w-[360px] flex flex-col gap-3.5 shadow-xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="text-[13px] text-text-main font-semibold">
+          Unsaved Changes
+        </div>
         <div className="text-xs text-text-muted">
-          <strong className="text-text-main">{fileName}</strong> has unsaved changes. Save before closing?
+          <strong className="text-text-main">{fileName}</strong> has unsaved
+          changes. Save before closing?
         </div>
         <div className="flex gap-2 justify-end mt-1">
-          <button onClick={onCancel} className={`${btnClass} !bg-bg-sidebar hover:!bg-hover border border-border-subtle !text-text-main`}>Cancel</button>
-          <button onClick={onDiscardAndClose} className={`${btnClass} !bg-red-900/80 hover:!bg-red-800`}>Don't Save</button>
-          <button onClick={onSaveAndClose} className={btnClass}>Save</button>
+          <button
+            onClick={onCancel}
+            className={`${btnClass} !bg-bg-sidebar hover:!bg-hover border border-border-subtle !text-text-main`}
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onDiscardAndClose}
+            className={`${btnClass} !bg-red-900/80 hover:!bg-red-800`}
+          >
+            Don't Save
+          </button>
+          <button onClick={onSaveAndClose} className={btnClass}>
+            Save
+          </button>
         </div>
       </div>
     </div>
@@ -83,33 +175,60 @@ function DirtyCloseModal({ fileName, onSaveAndClose, onDiscardAndClose, onCancel
 
 function AboutModal({ onClose }: { onClose: () => void }) {
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999]" onClick={onClose}>
-      <div className="bg-bg-app border border-border-subtle rounded-md p-7 min-w-[280px] flex flex-col gap-2.5 items-center shadow-xl" onClick={(e) => e.stopPropagation()}>
+    <div
+      className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999]"
+      onClick={onClose}
+    >
+      <div
+        className="bg-bg-app border border-border-subtle rounded-md p-7 min-w-[280px] flex flex-col gap-2.5 items-center shadow-xl"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="text-3xl font-bold text-accent">Diablo</div>
         <div className="text-xs text-text-muted">Version 0.1.0</div>
-        <div className="text-[11px] text-text-muted text-center leading-relaxed">A fast, minimal code editor<br />built with Tauri + Monaco</div>
-        <button onClick={onClose} className={`${btnClass} mt-2 px-4`}>Close</button>
+        <div className="text-[11px] text-text-muted text-center leading-relaxed">
+          A fast, minimal code editor
+          <br />
+          built with Tauri + Monaco
+        </div>
+        <button onClick={onClose} className={`${btnClass} mt-2 px-4`}>
+          Close
+        </button>
       </div>
     </div>
   );
 }
 
 export default function App() {
-  const { setWorkspaceRoot, addFile, closeFile, openFiles, markSaved, activeFile, workspaceRoot, updateSettings, settings } = useEditorStore();
+  const {
+    setWorkspaceRoot,
+    addFile,
+    closeFile,
+    openFiles,
+    markSaved,
+    activeFile,
+    workspaceRoot,
+    updateSettings,
+    settings,
+  } = useEditorStore();
   const [showNewFileModal, setShowNewFileModal] = useState(false);
   const [dirtyCloseTarget, setDirtyCloseTarget] = useState<string | null>(null);
   const [sidebarVisible, setSidebarVisible] = useState(true);
   const [sidebarWidth, setSidebarWidth] = useState(240);
-  const [searchTabOpen, setSearchTabOpen] = useState(false);  // tab exists in TabBar
-  const [searchActive, setSearchActive] = useState(false);    // SearchPanel is current view
+  const [searchTabOpen, setSearchTabOpen] = useState(false); // tab exists in TabBar
+  const [searchActive, setSearchActive] = useState(false); // SearchPanel is current view
   const [gitOpen, setGitOpen] = useState(false);
   const [gitPanelHeight, setGitPanelHeight] = useState(260);
   const { refresh: refreshGit, status: gitStatus } = useGitStore();
   const [terminalVisible, setTerminalVisible] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
   const dragRef = useRef<{ startX: number; startWidth: number } | null>(null);
-  const gitDragRef = useRef<{ startY: number; startHeight: number } | null>(null);
-  const [cursorPos, setCursorPos] = useState<{ line: number; col: number } | null>(null);
+  const gitDragRef = useRef<{ startY: number; startHeight: number } | null>(
+    null,
+  );
+  const [cursorPos, setCursorPos] = useState<{
+    line: number;
+    col: number;
+  } | null>(null);
   const [language, setLanguage] = useState<string | null>(null);
 
   // Native macOS system menu events forwarded from Rust via `menu-action` event
@@ -117,33 +236,91 @@ export default function App() {
     const unlisten = listen<string>("menu-action", ({ payload: id }) => {
       const store = useEditorStore.getState();
       switch (id) {
-        case "file_new":        setShowNewFileModal(true); break;
-        case "file_open":       handleOpenFolder(); break;
-        case "file_save":       handleSave(); break;
-        case "file_close":      { const p = store.activeFile; if (p) handleCloseRequest(p); break; }
-        case "edit_find":       window.dispatchEvent(new CustomEvent("editor-cmd", { detail: "actions.find" })); break;
-        case "edit_replace":    window.dispatchEvent(new CustomEvent("editor-cmd", { detail: "editor.action.startFindReplaceAction" })); break;
-        case "edit_find_files": setSearchTabOpen(true); setSearchActive(true); break;
-        case "view_sidebar":    setSidebarVisible((v) => !v); break;
-        case "view_terminal":   setTerminalVisible((v) => !v); break;
-        case "view_minimap":    store.updateSettings({ minimap: !store.settings.minimap }); break;
-        case "view_wordwrap":   store.updateSettings({ wordWrap: store.settings.wordWrap === "on" ? "off" : "on" }); break;
-        case "view_zoom_in":    store.updateSettings({ fontSize: Math.min(store.settings.fontSize + 1, 32) }); break;
-        case "view_zoom_out":   store.updateSettings({ fontSize: Math.max(store.settings.fontSize - 1, 8) }); break;
-        case "view_zoom_reset": store.updateSettings({ fontSize: 14 }); break;
-        case "help_about":      setShowAbout(true); break;
+        case "file_new":
+          setShowNewFileModal(true);
+          break;
+        case "file_open":
+          handleOpenFolder();
+          break;
+        case "file_save":
+          handleSave();
+          break;
+        case "file_close": {
+          const p = store.activeFile;
+          if (p) handleCloseRequest(p);
+          break;
+        }
+        case "edit_find":
+          window.dispatchEvent(
+            new CustomEvent("editor-cmd", { detail: "actions.find" }),
+          );
+          break;
+        case "edit_replace":
+          window.dispatchEvent(
+            new CustomEvent("editor-cmd", {
+              detail: "editor.action.startFindReplaceAction",
+            }),
+          );
+          break;
+        case "edit_find_files":
+          setSearchTabOpen(true);
+          setSearchActive(true);
+          break;
+        case "view_sidebar":
+          setSidebarVisible((v) => !v);
+          break;
+        case "view_terminal":
+          setTerminalVisible((v) => !v);
+          break;
+        case "view_minimap":
+          store.updateSettings({ minimap: !store.settings.minimap });
+          break;
+        case "view_wordwrap":
+          store.updateSettings({
+            wordWrap: store.settings.wordWrap === "on" ? "off" : "on",
+          });
+          break;
+        case "view_zoom_in":
+          store.updateSettings({
+            fontSize: Math.min(store.settings.fontSize + 1, 32),
+          });
+          break;
+        case "view_zoom_out":
+          store.updateSettings({
+            fontSize: Math.max(store.settings.fontSize - 1, 8),
+          });
+          break;
+        case "view_zoom_reset":
+          store.updateSettings({ fontSize: 14 });
+          break;
+        case "help_about":
+          setShowAbout(true);
+          break;
       }
     });
-    return () => { unlisten.then((f) => f()); };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    return () => {
+      unlisten.then((f) => f());
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Keyboard shortcuts (still handled locally for responsiveness)
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
       const meta = e.metaKey || e.ctrlKey;
-      if (e.ctrlKey && e.key === "`") { e.preventDefault(); setTerminalVisible((v) => !v); return; }
-      if (e.altKey && e.key === "z") { e.preventDefault(); useEditorStore.getState().updateSettings({ wordWrap: useEditorStore.getState().settings.wordWrap === "on" ? "off" : "on" }); return; }
+      if (e.ctrlKey && e.key === "`") {
+        e.preventDefault();
+        setTerminalVisible((v) => !v);
+        return;
+      }
+      if (e.altKey && e.key === "z") {
+        e.preventDefault();
+        useEditorStore.getState().updateSettings({
+          wordWrap:
+            useEditorStore.getState().settings.wordWrap === "on" ? "off" : "on",
+        });
+        return;
+      }
       if (!meta) return;
       if (e.shiftKey && e.key === "F") {
         e.preventDefault();
@@ -152,18 +329,43 @@ export default function App() {
         setSearchActive((v) => !v);
         return;
       }
-      if (e.shiftKey && e.key === "G") { e.preventDefault(); setGitOpen((v) => { if (!v && workspaceRoot) refreshGit(workspaceRoot); return !v; }); return; }
-      if (e.key === "s") { e.preventDefault(); handleSave(); }
-      else if (e.key === "w") { e.preventDefault(); const path = useEditorStore.getState().activeFile; if (path) handleCloseRequest(path); }
-      else if (e.key === "n") { e.preventDefault(); setShowNewFileModal(true); }
-      else if (e.key === "b") { e.preventDefault(); setSidebarVisible((v) => !v); }
-      else if (e.key === "=" || e.key === "+") { e.preventDefault(); const { fontSize } = useEditorStore.getState().settings; updateSettings({ fontSize: Math.min(fontSize + 1, 32) }); }
-      else if (e.key === "-") { e.preventDefault(); const { fontSize } = useEditorStore.getState().settings; updateSettings({ fontSize: Math.max(fontSize - 1, 8) }); }
-      else if (e.key === "0") { e.preventDefault(); updateSettings({ fontSize: 14 }); }
+      if (e.shiftKey && e.key === "G") {
+        e.preventDefault();
+        setGitOpen((v) => {
+          if (!v && workspaceRoot) refreshGit(workspaceRoot);
+          return !v;
+        });
+        return;
+      }
+      if (e.key === "s") {
+        e.preventDefault();
+        handleSave();
+      } else if (e.key === "w") {
+        e.preventDefault();
+        const path = useEditorStore.getState().activeFile;
+        if (path) handleCloseRequest(path);
+      } else if (e.key === "n") {
+        e.preventDefault();
+        setShowNewFileModal(true);
+      } else if (e.key === "b") {
+        e.preventDefault();
+        setSidebarVisible((v) => !v);
+      } else if (e.key === "=" || e.key === "+") {
+        e.preventDefault();
+        const { fontSize } = useEditorStore.getState().settings;
+        updateSettings({ fontSize: Math.min(fontSize + 1, 32) });
+      } else if (e.key === "-") {
+        e.preventDefault();
+        const { fontSize } = useEditorStore.getState().settings;
+        updateSettings({ fontSize: Math.max(fontSize - 1, 8) });
+      } else if (e.key === "0") {
+        e.preventDefault();
+        updateSettings({ fontSize: 14 });
+      }
     }
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -171,13 +373,19 @@ export default function App() {
       // Horizontal sidebar resize
       if (dragRef.current) {
         const delta = e.clientX - dragRef.current.startX;
-        const next = Math.max(120, Math.min(500, dragRef.current.startWidth + delta));
+        const next = Math.max(
+          120,
+          Math.min(500, dragRef.current.startWidth + delta),
+        );
         setSidebarWidth(next);
       }
       // Vertical git panel resize (dragging up = taller panel)
       if (gitDragRef.current) {
         const delta = e.clientY - gitDragRef.current.startY;
-        const next = Math.max(80, Math.min(600, gitDragRef.current.startHeight - delta));
+        const next = Math.max(
+          80,
+          Math.min(600, gitDragRef.current.startHeight - delta),
+        );
         setGitPanelHeight(next);
       }
     }
@@ -189,14 +397,30 @@ export default function App() {
     }
     window.addEventListener("mousemove", onMouseMove);
     window.addEventListener("mouseup", onMouseUp);
-    return () => { window.removeEventListener("mousemove", onMouseMove); window.removeEventListener("mouseup", onMouseUp); };
+    return () => {
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
+    };
   }, []);
 
-  function startDrag(e: React.MouseEvent) { dragRef.current = { startX: e.clientX, startWidth: sidebarWidth }; document.body.style.cursor = "col-resize"; document.body.style.userSelect = "none"; }
-  function startGitDrag(e: React.MouseEvent) { e.preventDefault(); gitDragRef.current = { startY: e.clientY, startHeight: gitPanelHeight }; document.body.style.cursor = "row-resize"; document.body.style.userSelect = "none"; }
+  function startDrag(e: React.MouseEvent) {
+    dragRef.current = { startX: e.clientX, startWidth: sidebarWidth };
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
+  }
+  function startGitDrag(e: React.MouseEvent) {
+    e.preventDefault();
+    gitDragRef.current = { startY: e.clientY, startHeight: gitPanelHeight };
+    document.body.style.cursor = "row-resize";
+    document.body.style.userSelect = "none";
+  }
 
   async function handleSave() {
-    const { openFiles: files, activeFile: path, markSaved: ms } = useEditorStore.getState();
+    const {
+      openFiles: files,
+      activeFile: path,
+      markSaved: ms,
+    } = useEditorStore.getState();
     if (!path) return;
     const file = files.find((f) => f.path === path);
     if (!file) return;
@@ -207,11 +431,37 @@ export default function App() {
     if (root) refreshGit(root);
   }
 
-  function handleCloseRequest(path: string) { const file = useEditorStore.getState().openFiles.find((f) => f.path === path); if (file?.dirty) { setDirtyCloseTarget(path); } else { closeFile(path); } }
+  function handleCloseRequest(path: string) {
+    const file = useEditorStore
+      .getState()
+      .openFiles.find((f) => f.path === path);
+    if (file?.dirty) {
+      setDirtyCloseTarget(path);
+    } else {
+      closeFile(path);
+    }
+  }
 
-  async function handleSaveAndClose() { if (!dirtyCloseTarget) return; const path = dirtyCloseTarget; setDirtyCloseTarget(null); const file = useEditorStore.getState().openFiles.find((f) => f.path === path); if (file) { await invoke("fs_write", { path, content: file.content }); markSaved(path); } closeFile(path); }
+  async function handleSaveAndClose() {
+    if (!dirtyCloseTarget) return;
+    const path = dirtyCloseTarget;
+    setDirtyCloseTarget(null);
+    const file = useEditorStore
+      .getState()
+      .openFiles.find((f) => f.path === path);
+    if (file) {
+      await invoke("fs_write", { path, content: file.content });
+      markSaved(path);
+    }
+    closeFile(path);
+  }
 
-  function handleDiscardAndClose() { if (!dirtyCloseTarget) return; const path = dirtyCloseTarget; setDirtyCloseTarget(null); closeFile(path); }
+  function handleDiscardAndClose() {
+    if (!dirtyCloseTarget) return;
+    const path = dirtyCloseTarget;
+    setDirtyCloseTarget(null);
+    closeFile(path);
+  }
 
   async function confirmNewFile(name: string) {
     setShowNewFileModal(false);
@@ -230,19 +480,39 @@ export default function App() {
 
   async function handleOpenFolder() {
     const selected = await open({ directory: true, multiple: false });
-    if (typeof selected === "string") { setWorkspaceRoot(selected); await invoke("fs_watch", { path: selected }); refreshGit(selected); }
+    if (typeof selected === "string") {
+      setWorkspaceRoot(selected);
+      await invoke("fs_watch", { path: selected });
+      refreshGit(selected);
+    }
   }
 
-  const dirtyCloseFile = dirtyCloseTarget ? openFiles.find((f) => f.path === dirtyCloseTarget) : null;
+  const dirtyCloseFile = dirtyCloseTarget
+    ? openFiles.find((f) => f.path === dirtyCloseTarget)
+    : null;
 
   return (
     <div className="flex flex-col h-full w-full bg-bg-app overflow-hidden">
-      {showNewFileModal && <NewFileModal onConfirm={confirmNewFile} onCancel={() => setShowNewFileModal(false)} />}
+      {showNewFileModal && (
+        <NewFileModal
+          onConfirm={confirmNewFile}
+          onCancel={() => setShowNewFileModal(false)}
+        />
+      )}
       {showAbout && <AboutModal onClose={() => setShowAbout(false)} />}
-      {dirtyCloseFile && <DirtyCloseModal fileName={dirtyCloseFile.path.split("/").pop() ?? dirtyCloseFile.path} onSaveAndClose={handleSaveAndClose} onDiscardAndClose={handleDiscardAndClose} onCancel={() => setDirtyCloseTarget(null)} />}
+      {dirtyCloseFile && (
+        <DirtyCloseModal
+          fileName={dirtyCloseFile.path.split("/").pop() ?? dirtyCloseFile.path}
+          onSaveAndClose={handleSaveAndClose}
+          onDiscardAndClose={handleDiscardAndClose}
+          onCancel={() => setDirtyCloseTarget(null)}
+        />
+      )}
 
       <MenuBar
-        activeFileName={activeFile ? activeFile.split("/").pop() ?? null : null}
+        activeFileName={
+          activeFile ? (activeFile.split("/").pop() ?? null) : null
+        }
         panels={{
           sidebarVisible,
           terminalVisible,
@@ -254,10 +524,12 @@ export default function App() {
       />
 
       <div className="flex flex-1 overflow-hidden">
-
         {sidebarVisible && (
           <>
-            <div style={{ width: sidebarWidth }} className="bg-bg-sidebar border-r border-border-subtle flex flex-col shrink-0 overflow-hidden">
+            <div
+              style={{ width: sidebarWidth }}
+              className="bg-bg-sidebar border-r border-border-subtle flex flex-col shrink-0 overflow-hidden"
+            >
               {/* File Explorer — always visible, grows to fill remaining space */}
               <div style={{ flex: 1, overflow: "hidden", minHeight: 80 }}>
                 <FileExplorer />
@@ -269,16 +541,31 @@ export default function App() {
                   {/* Horizontal drag handle between explorer and git */}
                   <div
                     onMouseDown={startGitDrag}
-                    style={{ height: 4, cursor: "row-resize", flexShrink: 0, borderTop: "1px solid #333", borderBottom: "1px solid #333" }}
+                    style={{
+                      height: 4,
+                      cursor: "row-resize",
+                      flexShrink: 0,
+                      borderTop: "1px solid #333",
+                      borderBottom: "1px solid #333",
+                    }}
                     className="bg-transparent hover:bg-primary transition-colors"
                   />
-                  <div style={{ height: gitPanelHeight, flexShrink: 0, overflow: "hidden" }}>
+                  <div
+                    style={{
+                      height: gitPanelHeight,
+                      flexShrink: 0,
+                      overflow: "hidden",
+                    }}
+                  >
                     <GitPanel />
                   </div>
                 </>
               )}
             </div>
-            <div onMouseDown={startDrag} className="w-1 cursor-col-resize bg-transparent hover:bg-primary shrink-0 z-10 transition-colors" />
+            <div
+              onMouseDown={startDrag}
+              className="w-1 cursor-col-resize bg-transparent hover:bg-primary shrink-0 z-10 transition-colors"
+            />
           </>
         )}
 
@@ -288,34 +575,59 @@ export default function App() {
             searchTabOpen={searchTabOpen}
             searchActive={searchActive}
             onSearchTabActivate={() => setSearchActive(true)}
-            onSearchTabClose={() => { setSearchTabOpen(false); setSearchActive(false); }}
+            onSearchTabClose={() => {
+              setSearchTabOpen(false);
+              setSearchActive(false);
+            }}
             onFileTabClick={() => setSearchActive(false)}
           />
           {/* Hide breadcrumb when Search is the active view */}
-          <Breadcrumb path={searchActive ? null : activeFile} root={workspaceRoot} />
-          <div className="flex-1 overflow-hidden bg-bg-app" style={{ position: "relative" }}>
+          <Breadcrumb
+            path={searchActive ? null : activeFile}
+            root={workspaceRoot}
+          />
+          <div
+            className="flex-1 overflow-hidden bg-bg-app"
+            style={{ position: "relative" }}
+          >
             {/* SearchPanel stays mounted while tab is open — only hidden/shown via CSS */}
             {/* This preserves query + results when user switches away and back */}
             {searchTabOpen && (
               <div
                 style={{
-                  position: "absolute", inset: 0, zIndex: 10,
+                  position: "absolute",
+                  inset: 0,
+                  zIndex: 10,
                   display: searchActive ? "flex" : "none",
                   flexDirection: "column",
                 }}
                 className="bg-bg-app"
               >
-                <SearchPanel mode="overlay" onClose={() => setSearchActive(false)} autoFocus={searchActive} />
+                <SearchPanel
+                  mode="overlay"
+                  onClose={() => setSearchActive(false)}
+                  autoFocus={searchActive}
+                />
               </div>
             )}
             {/* Editor / welcome screen always rendered underneath */}
-            {activeFile
-              ? <MonacoEditor onCursorChange={setCursorPos} onLanguageChange={setLanguage} />
-              : <WelcomeScreen onOpenFolder={handleOpenFolder} onNewFile={() => setShowNewFileModal(true)} />
-            }
+            {activeFile ? (
+              <MonacoEditor
+                onCursorChange={setCursorPos}
+                onLanguageChange={setLanguage}
+              />
+            ) : (
+              <WelcomeScreen
+                onOpenFolder={handleOpenFolder}
+                onNewFile={() => setShowNewFileModal(true)}
+              />
+            )}
           </div>
           {terminalVisible && (
-            <div style={{ height: 240 }} className="shrink-0 border-t border-border-subtle bg-bg-app">
+            <div
+              style={{ height: 240 }}
+              className="shrink-0 border-t border-border-subtle bg-bg-app"
+            >
               <TerminalPane onClose={() => setTerminalVisible(false)} />
             </div>
           )}
@@ -329,7 +641,10 @@ export default function App() {
         gitOpen={gitOpen}
         gitCount={gitStatus?.files.length ?? 0}
         onToggleExplorer={() => setSidebarVisible((v) => !v)}
-        onToggleSearch={() => { setSearchTabOpen(true); setSearchActive((v) => !v); }}
+        onToggleSearch={() => {
+          setSearchTabOpen(true);
+          setSearchActive((v) => !v);
+        }}
         onToggleGit={() => {
           setGitOpen((v) => {
             if (!v && workspaceRoot) refreshGit(workspaceRoot);
