@@ -125,6 +125,40 @@ python3 -c "from graphify.ingest import query; query('What does X do?')"
 
 ---
 
+### CSS & Spacing Rules (Diablo IDE — Tauri + Vite + Tailwind v4)
+
+**NEVER use Tailwind utility classes for `padding`, `margin`, `gap`, `width`, or `height`.**
+
+#### Why
+
+Tailwind v4's Vite plugin compiles utility classes at **dev-server startup** by scanning source files. Classes that weren't present at startup are NOT added to the CSS bundle during HMR — they silently have no effect. This makes Tailwind spacing classes unreliable in the Tauri WebView during development.
+
+#### Rule
+
+For all spacing, sizing, and layout properties use **inline `style` props** in TSX:
+
+```tsx
+// ✅ Correct — always works
+<div style={{ padding: "0 12px", gap: 8, marginTop: 4 }}>
+
+// ❌ Never do this for spacing — may silently have no effect
+<div className="px-3 gap-2 mt-1">
+```
+
+#### What Tailwind IS still fine for
+
+Tailwind classes are acceptable for properties that don't involve spacing and were present in the codebase from the start:
+- Colors: `text-text-main`, `bg-bg-sidebar`, `text-accent`
+- Borders: `border-b`, `border-border-subtle`
+- Flex/layout flags: `flex`, `items-center`, `flex-1`, `shrink-0`, `overflow-hidden`
+- Visibility/interaction: `cursor-pointer`, `select-none`, `whitespace-nowrap`, `transition-colors`
+- Hover variants: `hover:bg-hover`, `hover:text-text-main`
+
+These were in the initial bundle and are safe to use.
+
+---
+
+
 ## ✅ Task Execution Workflow
 
 For EVERY task:

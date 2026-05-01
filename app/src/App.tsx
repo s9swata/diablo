@@ -14,7 +14,7 @@ import { StatusBar } from "./layout/StatusBar";
 import { Breadcrumb } from "./layout/Breadcrumb";
 import { TabBar } from "./layout/TabBar";
 
-type SidebarMode = "explorer" | "search" | "git";
+
 
 const btnClass = "bg-primary text-white border-none rounded-sm px-2.5 py-1 text-xs cursor-pointer hover:opacity-90 transition-opacity";
 
@@ -100,11 +100,15 @@ export default function App() {
   const [dirtyCloseTarget, setDirtyCloseTarget] = useState<string | null>(null);
   const [sidebarVisible, setSidebarVisible] = useState(true);
   const [sidebarWidth, setSidebarWidth] = useState(240);
-  const [sidebarMode, setSidebarMode] = useState<SidebarMode>("explorer");
+  const [searchTabOpen, setSearchTabOpen] = useState(false);  // tab exists in TabBar
+  const [searchActive, setSearchActive] = useState(false);    // SearchPanel is current view
+  const [gitOpen, setGitOpen] = useState(false);
+  const [gitPanelHeight, setGitPanelHeight] = useState(260);
   const { refresh: refreshGit, status: gitStatus } = useGitStore();
   const [terminalVisible, setTerminalVisible] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
   const dragRef = useRef<{ startX: number; startWidth: number } | null>(null);
+  const gitDragRef = useRef<{ startY: number; startHeight: number } | null>(null);
   const [cursorPos, setCursorPos] = useState<{ line: number; col: number } | null>(null);
   const [language, setLanguage] = useState<string | null>(null);
 
@@ -119,7 +123,7 @@ export default function App() {
         case "file_close":      { const p = store.activeFile; if (p) handleCloseRequest(p); break; }
         case "edit_find":       window.dispatchEvent(new CustomEvent("editor-cmd", { detail: "actions.find" })); break;
         case "edit_replace":    window.dispatchEvent(new CustomEvent("editor-cmd", { detail: "editor.action.startFindReplaceAction" })); break;
-        case "edit_find_files": setSidebarVisible(true); setSidebarMode("search"); break;
+        case "edit_find_files": setSearchTabOpen(true); setSearchActive(true); break;
         case "view_sidebar":    setSidebarVisible((v) => !v); break;
         case "view_terminal":   setTerminalVisible((v) => !v); break;
         case "view_minimap":    store.updateSettings({ minimap: !store.settings.minimap }); break;
@@ -141,7 +145,14 @@ export default function App() {
       if (e.ctrlKey && e.key === "`") { e.preventDefault(); setTerminalVisible((v) => !v); return; }
       if (e.altKey && e.key === "z") { e.preventDefault(); useEditorStore.getState().updateSettings({ wordWrap: useEditorStore.getState().settings.wordWrap === "on" ? "off" : "on" }); return; }
       if (!meta) return;
-      if (e.shiftKey && e.key === "F") { e.preventDefault(); setSidebarVisible(true); setSidebarMode("search"); return; }
+      if (e.shiftKey && e.key === "F") {
+        e.preventDefault();
+        // If tab doesn't exist: open + activate. If exists but inactive: activate. If active: deactivate.
+        setSearchTabOpen(true);
+        setSearchActive((v) => !v);
+        return;
+      }
+      if (e.shiftKey && e.key === "G") { e.preventDefault(); setGitOpen((v) => { if (!v && workspaceRoot) refreshGit(workspaceRoot); return !v; }); return; }
       if (e.key === "s") { e.preventDefault(); handleSave(); }
       else if (e.key === "w") { e.preventDefault(); const path = useEditorStore.getState().activeFile; if (path) handleCloseRequest(path); }
       else if (e.key === "n") { e.preventDefault(); setShowNewFileModal(true); }
@@ -157,18 +168,32 @@ export default function App() {
 
   useEffect(() => {
     function onMouseMove(e: MouseEvent) {
-      if (!dragRef.current) return;
-      const delta = e.clientX - dragRef.current.startX;
-      const next = Math.max(120, Math.min(500, dragRef.current.startWidth + delta));
-      setSidebarWidth(next);
+      // Horizontal sidebar resize
+      if (dragRef.current) {
+        const delta = e.clientX - dragRef.current.startX;
+        const next = Math.max(120, Math.min(500, dragRef.current.startWidth + delta));
+        setSidebarWidth(next);
+      }
+      // Vertical git panel resize (dragging up = taller panel)
+      if (gitDragRef.current) {
+        const delta = e.clientY - gitDragRef.current.startY;
+        const next = Math.max(80, Math.min(600, gitDragRef.current.startHeight - delta));
+        setGitPanelHeight(next);
+      }
     }
-    function onMouseUp() { dragRef.current = null; document.body.style.cursor = ""; document.body.style.userSelect = ""; }
+    function onMouseUp() {
+      dragRef.current = null;
+      gitDragRef.current = null;
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+    }
     window.addEventListener("mousemove", onMouseMove);
     window.addEventListener("mouseup", onMouseUp);
     return () => { window.removeEventListener("mousemove", onMouseMove); window.removeEventListener("mouseup", onMouseUp); };
   }, []);
 
   function startDrag(e: React.MouseEvent) { dragRef.current = { startX: e.clientX, startWidth: sidebarWidth }; document.body.style.cursor = "col-resize"; document.body.style.userSelect = "none"; }
+  function startGitDrag(e: React.MouseEvent) { e.preventDefault(); gitDragRef.current = { startY: e.clientY, startHeight: gitPanelHeight }; document.body.style.cursor = "row-resize"; document.body.style.userSelect = "none"; }
 
   async function handleSave() {
     const { openFiles: files, activeFile: path, markSaved: ms } = useEditorStore.getState();
@@ -229,57 +254,89 @@ export default function App() {
       />
 
       <div className="flex flex-1 overflow-hidden">
-        
+
         {sidebarVisible && (
           <>
             <div style={{ width: sidebarWidth }} className="bg-bg-sidebar border-r border-border-subtle flex flex-col shrink-0 overflow-hidden">
-              <div className="px-2 text-[11px] text-text-muted uppercase tracking-wider font-semibold border-b border-border-subtle select-none flex-shrink-0 flex h-9 items-center gap-0.5">
-                {(["explorer", "search", "git"] as SidebarMode[]).map((mode) => (
-                  <span
-                    key={mode}
-                    onClick={() => {
-                      setSidebarMode(mode);
-                      if (mode === "git" && workspaceRoot) refreshGit(workspaceRoot);
-                    }}
-                    className={`cursor-pointer px-2.5 h-full flex items-center gap-1.5 border-b-2 transition-colors ${
-                      sidebarMode === mode
-                        ? "border-accent text-text-main"
-                        : "border-transparent hover:text-text-main"
-                    }`}
-                  >
-                    {mode === "explorer" ? "Explorer" : mode === "search" ? "Search" : (
-                      <>
-                        Git
-                        {gitStatus?.files.length ? (
-                          <span className="bg-primary text-white text-[9px] px-1 rounded-sm leading-none py-0.5 ml-0.5">{gitStatus.files.length}</span>
-                        ) : null}
-                      </>
-                    )}
-                  </span>
-                ))}
+              {/* File Explorer — always visible, grows to fill remaining space */}
+              <div style={{ flex: 1, overflow: "hidden", minHeight: 80 }}>
+                <FileExplorer />
               </div>
-              <div className="flex-1 overflow-hidden relative">
-                {sidebarMode === "explorer" ? <FileExplorer /> : sidebarMode === "search" ? <SearchPanel autoFocus /> : <GitPanel />}
-              </div>
+
+              {/* Git panel — vertical split at bottom, user-resizable */}
+              {gitOpen && (
+                <>
+                  {/* Horizontal drag handle between explorer and git */}
+                  <div
+                    onMouseDown={startGitDrag}
+                    style={{ height: 4, cursor: "row-resize", flexShrink: 0, borderTop: "1px solid #333", borderBottom: "1px solid #333" }}
+                    className="bg-transparent hover:bg-primary transition-colors"
+                  />
+                  <div style={{ height: gitPanelHeight, flexShrink: 0, overflow: "hidden" }}>
+                    <GitPanel />
+                  </div>
+                </>
+              )}
             </div>
             <div onMouseDown={startDrag} className="w-1 cursor-col-resize bg-transparent hover:bg-primary shrink-0 z-10 transition-colors" />
           </>
         )}
 
         <div className="flex flex-col flex-1 overflow-hidden">
-          <TabBar onCloseRequest={handleCloseRequest} />
-          <Breadcrumb path={activeFile} root={workspaceRoot} />
-          <div className="flex-1 overflow-hidden bg-bg-app">
-            {activeFile ? <MonacoEditor onCursorChange={setCursorPos} onLanguageChange={setLanguage} /> : <WelcomeScreen onOpenFolder={handleOpenFolder} onNewFile={() => setShowNewFileModal(true)} />}
+          <TabBar
+            onCloseRequest={handleCloseRequest}
+            searchTabOpen={searchTabOpen}
+            searchActive={searchActive}
+            onSearchTabActivate={() => setSearchActive(true)}
+            onSearchTabClose={() => { setSearchTabOpen(false); setSearchActive(false); }}
+            onFileTabClick={() => setSearchActive(false)}
+          />
+          {/* Hide breadcrumb when Search is the active view */}
+          <Breadcrumb path={searchActive ? null : activeFile} root={workspaceRoot} />
+          <div className="flex-1 overflow-hidden bg-bg-app" style={{ position: "relative" }}>
+            {/* SearchPanel stays mounted while tab is open — only hidden/shown via CSS */}
+            {/* This preserves query + results when user switches away and back */}
+            {searchTabOpen && (
+              <div
+                style={{
+                  position: "absolute", inset: 0, zIndex: 10,
+                  display: searchActive ? "flex" : "none",
+                  flexDirection: "column",
+                }}
+                className="bg-bg-app"
+              >
+                <SearchPanel mode="overlay" onClose={() => setSearchActive(false)} autoFocus={searchActive} />
+              </div>
+            )}
+            {/* Editor / welcome screen always rendered underneath */}
+            {activeFile
+              ? <MonacoEditor onCursorChange={setCursorPos} onLanguageChange={setLanguage} />
+              : <WelcomeScreen onOpenFolder={handleOpenFolder} onNewFile={() => setShowNewFileModal(true)} />
+            }
           </div>
           {terminalVisible && (
-            <div className="h-[240px] shrink-0 border-t border-border-subtle bg-bg-app">
+            <div style={{ height: 240 }} className="shrink-0 border-t border-border-subtle bg-bg-app">
               <TerminalPane onClose={() => setTerminalVisible(false)} />
             </div>
           )}
         </div>
       </div>
-      <StatusBar cursorPos={cursorPos} language={language} />
+      <StatusBar
+        cursorPos={cursorPos}
+        language={language}
+        sidebarVisible={sidebarVisible}
+        searchOpen={searchActive}
+        gitOpen={gitOpen}
+        gitCount={gitStatus?.files.length ?? 0}
+        onToggleExplorer={() => setSidebarVisible((v) => !v)}
+        onToggleSearch={() => { setSearchTabOpen(true); setSearchActive((v) => !v); }}
+        onToggleGit={() => {
+          setGitOpen((v) => {
+            if (!v && workspaceRoot) refreshGit(workspaceRoot);
+            return !v;
+          });
+        }}
+      />
     </div>
   );
 }

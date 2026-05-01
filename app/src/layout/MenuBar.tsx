@@ -70,11 +70,10 @@ function PanelBtn({
     <button
       title={title}
       onClick={onClick}
-      className={`w-7 h-7 flex items-center justify-center rounded-sm transition-colors cursor-default ${
-        active
-          ? "text-accent bg-hover"
-          : "text-text-muted hover:bg-hover hover:text-text-main"
-      }`}
+      className={`w-7 h-7 flex items-center justify-center rounded-sm transition-colors cursor-default ${active
+        ? "text-accent bg-hover"
+        : "text-text-muted hover:bg-hover hover:text-text-main"
+        }`}
     >
       {children}
     </button>
@@ -109,7 +108,7 @@ export function MenuBar({ activeFileName, panels }: TitleBarProps) {
           <span className="font-semibold text-text-main">Diablo</span>
           {activeFileName && (
             <>
-              <span className="mx-1.5 text-text-muted opacity-50">—</span>
+              <span className="text-text-muted opacity-50" style={{ padding: "0 4px" }}>—</span>
               <span className="text-text-muted opacity-80">{activeFileName}</span>
             </>
           )}
@@ -119,7 +118,7 @@ export function MenuBar({ activeFileName, panels }: TitleBarProps) {
       {/* Right: panel toggles */}
       <div
         className="flex items-center gap-0.5 px-2 ml-auto z-10"
-        style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
+        style={{ WebkitAppRegion: "no-drag", padding: "0 4px" } as React.CSSProperties}
       >
         <PanelBtn title="Toggle Sidebar (⌘B)" active={panels.sidebarVisible} onClick={panels.onToggleSidebar}>
           <IconSidebar active={panels.sidebarVisible} />
