@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { open } from "@tauri-apps/plugin-dialog";
 import { invoke } from "@tauri-apps/api/core";
-import { getCurrentWindow } from "@tauri-apps/api/window";
+import { listen } from "@tauri-apps/api/event";
 import { FileExplorer } from "./panels/FileExplorer";
 import { SearchPanel } from "./panels/SearchPanel";
 import { GitPanel } from "./panels/GitPanel";
@@ -108,11 +108,38 @@ export default function App() {
   const [cursorPos, setCursorPos] = useState<{ line: number; col: number } | null>(null);
   const [language, setLanguage] = useState<string | null>(null);
 
+  // Native macOS system menu events forwarded from Rust via `menu-action` event
+  useEffect(() => {
+    const unlisten = listen<string>("menu-action", ({ payload: id }) => {
+      const store = useEditorStore.getState();
+      switch (id) {
+        case "file_new":        setShowNewFileModal(true); break;
+        case "file_open":       handleOpenFolder(); break;
+        case "file_save":       handleSave(); break;
+        case "file_close":      { const p = store.activeFile; if (p) handleCloseRequest(p); break; }
+        case "edit_find":       window.dispatchEvent(new CustomEvent("editor-cmd", { detail: "actions.find" })); break;
+        case "edit_replace":    window.dispatchEvent(new CustomEvent("editor-cmd", { detail: "editor.action.startFindReplaceAction" })); break;
+        case "edit_find_files": setSidebarVisible(true); setSidebarMode("search"); break;
+        case "view_sidebar":    setSidebarVisible((v) => !v); break;
+        case "view_terminal":   setTerminalVisible((v) => !v); break;
+        case "view_minimap":    store.updateSettings({ minimap: !store.settings.minimap }); break;
+        case "view_wordwrap":   store.updateSettings({ wordWrap: store.settings.wordWrap === "on" ? "off" : "on" }); break;
+        case "view_zoom_in":    store.updateSettings({ fontSize: Math.min(store.settings.fontSize + 1, 32) }); break;
+        case "view_zoom_out":   store.updateSettings({ fontSize: Math.max(store.settings.fontSize - 1, 8) }); break;
+        case "view_zoom_reset": store.updateSettings({ fontSize: 14 }); break;
+        case "help_about":      setShowAbout(true); break;
+      }
+    });
+    return () => { unlisten.then((f) => f()); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Keyboard shortcuts (still handled locally for responsiveness)
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
       const meta = e.metaKey || e.ctrlKey;
-      if (e.ctrlKey && !meta && e.key === "`") { e.preventDefault(); setTerminalVisible((v) => !v); return; }
-      if (e.altKey && !meta && e.key === "z") { e.preventDefault(); useEditorStore.getState().updateSettings({ wordWrap: useEditorStore.getState().settings.wordWrap === "on" ? "off" : "on" }); return; }
+      if (e.ctrlKey && e.key === "`") { e.preventDefault(); setTerminalVisible((v) => !v); return; }
+      if (e.altKey && e.key === "z") { e.preventDefault(); useEditorStore.getState().updateSettings({ wordWrap: useEditorStore.getState().settings.wordWrap === "on" ? "off" : "on" }); return; }
       if (!meta) return;
       if (e.shiftKey && e.key === "F") { e.preventDefault(); setSidebarVisible(true); setSidebarMode("search"); return; }
       if (e.key === "s") { e.preventDefault(); handleSave(); }
@@ -183,23 +210,13 @@ export default function App() {
 
   const dirtyCloseFile = dirtyCloseTarget ? openFiles.find((f) => f.path === dirtyCloseTarget) : null;
 
-  const menus = [
-    { label: "File", items: [ { label: "New File", action: () => setShowNewFileModal(true), shortcut: "⌘N" }, { label: "Open Folder...", action: handleOpenFolder, shortcut: "⌘O" }, { label: "Save", action: handleSave, shortcut: "⌘S" }, { label: "Close File", action: () => { const p = useEditorStore.getState().activeFile; if (p) handleCloseRequest(p); }, shortcut: "⌘W" }, ] },
-    { label: "Edit", items: [ { label: "Undo", action: () => window.dispatchEvent(new CustomEvent("editor-cmd", { detail: "undo" })), shortcut: "⌘Z" }, { label: "Redo", action: () => window.dispatchEvent(new CustomEvent("editor-cmd", { detail: "redo" })), shortcut: "⌘⇧Z" }, { label: "Find", action: () => window.dispatchEvent(new CustomEvent("editor-cmd", { detail: "actions.find" })), shortcut: "⌘F" }, { label: "Replace", action: () => window.dispatchEvent(new CustomEvent("editor-cmd", { detail: "editor.action.startFindReplaceAction" })), shortcut: "⌘H" }, { label: "Find in Files", action: () => { setSidebarVisible(true); setSidebarMode("search"); }, shortcut: "⌘⇧F" }, ] },
-    { label: "View", items: [ { label: "Toggle Sidebar", action: () => setSidebarVisible((v) => !v), shortcut: "⌘B", checked: sidebarVisible }, { label: "Toggle Word Wrap", action: () => updateSettings({ wordWrap: settings.wordWrap === "on" ? "off" : "on" }), shortcut: "⌥Z", checked: settings.wordWrap === "on" }, { label: "Toggle Minimap", action: () => updateSettings({ minimap: !settings.minimap }), checked: settings.minimap }, { label: "Zoom In", action: () => updateSettings({ fontSize: Math.min(settings.fontSize + 1, 32) }), shortcut: "⌘=" }, { label: "Zoom Out", action: () => updateSettings({ fontSize: Math.max(settings.fontSize - 1, 8) }), shortcut: "⌘-" }, { label: "Reset Zoom", action: () => updateSettings({ fontSize: 14 }), shortcut: "⌘0" }, ] },
-    { label: "Window", items: [ { label: "Minimize", action: () => getCurrentWindow().minimize(), shortcut: "⌘M" }, { label: "Close Window", action: () => getCurrentWindow().close(), shortcut: "⌘⇧W" }, ] },
-    { label: "Terminal", items: [ { label: "New Terminal", action: () => setTerminalVisible((v) => !v), shortcut: "⌃`", checked: terminalVisible }, ] },
-    { label: "Help", items: [{ label: "About Diablo", action: () => setShowAbout(true) }], },
-  ];
-
   return (
     <div className="flex flex-col h-full w-full bg-bg-app overflow-hidden">
       {showNewFileModal && <NewFileModal onConfirm={confirmNewFile} onCancel={() => setShowNewFileModal(false)} />}
       {showAbout && <AboutModal onClose={() => setShowAbout(false)} />}
       {dirtyCloseFile && <DirtyCloseModal fileName={dirtyCloseFile.path.split("/").pop() ?? dirtyCloseFile.path} onSaveAndClose={handleSaveAndClose} onDiscardAndClose={handleDiscardAndClose} onCancel={() => setDirtyCloseTarget(null)} />}
-      
+
       <MenuBar
-        menus={menus}
         activeFileName={activeFile ? activeFile.split("/").pop() ?? null : null}
         panels={{
           sidebarVisible,

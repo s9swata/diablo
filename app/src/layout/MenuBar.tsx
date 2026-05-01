@@ -1,17 +1,12 @@
-import { useState, useRef, useEffect } from "react";
-
-interface MenuItem {
-  label: string;
-  action?: () => void;
-  shortcut?: string;
-  checked?: boolean;
-  separator?: boolean;
-}
-
-interface Menu {
-  label: string;
-  items: MenuItem[];
-}
+/**
+ * TitleBar — macOS-style window chrome.
+ *
+ * Layout: [80px traffic-light zone | drag region | centered title | panel toggles]
+ *
+ * The actual File/Edit/View/… menus live in the native macOS system menu bar
+ * (built in Rust via tauri::menu). This component only renders the window title
+ * and the three panel-toggle buttons on the right.
+ */
 
 interface PanelState {
   sidebarVisible: boolean;
@@ -22,13 +17,13 @@ interface PanelState {
   onToggleMinimap: () => void;
 }
 
-interface MenuBarProps {
-  menus: Menu[];
+interface TitleBarProps {
   activeFileName?: string | null;
   panels: PanelState;
 }
 
-// SVG icon components
+// ── Icon components ────────────────────────────────────────────────────────
+
 function IconSidebar({ active }: { active: boolean }) {
   return (
     <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
@@ -60,126 +55,6 @@ function IconMinimap({ active }: { active: boolean }) {
   );
 }
 
-export function MenuBar({ menus, activeFileName, panels }: MenuBarProps) {
-  const [openMenu, setOpenMenu] = useState<number | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setOpenMenu(null);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  return (
-    <div
-      ref={containerRef}
-      data-tauri-drag-region
-      className="relative flex items-center h-9 bg-bg-app border-b border-border-subtle shrink-0 select-none"
-      style={{ WebkitAppRegion: "drag" } as React.CSSProperties}
-    >
-      {/* ── Left: traffic lights safe zone + menus ── */}
-      <div className="flex items-center h-full z-10" style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}>
-        {/* Traffic light spacer */}
-        <div className="w-[80px] h-full shrink-0" style={{ WebkitAppRegion: "drag" } as React.CSSProperties} />
-
-        {/* Menu items */}
-        {menus.map((menu, i) => {
-          const isOpen = openMenu === i;
-          return (
-            <div key={menu.label} className="relative h-full">
-              <button
-                className={`px-2.5 h-full flex items-center text-[13px] font-medium rounded-sm transition-colors cursor-default ${
-                  isOpen
-                    ? "bg-hover text-text-main"
-                    : "text-text-main hover:bg-hover"
-                }`}
-                onClick={(e) => { e.stopPropagation(); setOpenMenu(isOpen ? null : i); }}
-                onMouseEnter={() => { if (openMenu !== null) setOpenMenu(i); }}
-              >
-                {menu.label}
-              </button>
-
-              {isOpen && (
-                <div className="absolute top-full left-0 mt-0.5 min-w-[220px] bg-bg-sidebar border border-border-subtle rounded-md shadow-2xl py-1 z-50">
-                  {menu.items.map((item, j) =>
-                    item.separator ? (
-                      <div key={j} className="my-1 mx-2 border-t border-border-subtle" />
-                    ) : (
-                      <button
-                        key={j}
-                        onClick={() => { item.action?.(); setOpenMenu(null); }}
-                        className="w-full px-4 py-1.5 flex items-center justify-between text-[13px] text-text-main cursor-default hover:bg-hover hover:text-white text-left"
-                      >
-                        <div className="flex items-center gap-2">
-                          <span className="w-4 flex justify-center text-accent text-xs">
-                            {item.checked && "✓"}
-                          </span>
-                          {item.label}
-                        </div>
-                        {item.shortcut && (
-                          <span className="text-text-muted text-[11px] tracking-wider ml-8">{item.shortcut}</span>
-                        )}
-                      </button>
-                    )
-                  )}
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-
-      {/* ── Center: Diablo — filename (absolutely centered) ── */}
-      <div
-        className="absolute inset-0 flex items-center justify-center pointer-events-none"
-        style={{ WebkitAppRegion: "drag" } as React.CSSProperties}
-      >
-        <span className="text-[13px] font-medium text-text-muted tracking-tight">
-          <span className="text-text-main font-semibold">Diablo</span>
-          {activeFileName && (
-            <>
-              <span className="mx-1.5 opacity-40">—</span>
-              <span className="opacity-70">{activeFileName}</span>
-            </>
-          )}
-        </span>
-      </div>
-
-      {/* ── Right: panel toggles ── */}
-      <div
-        className="flex items-center gap-0.5 px-2 ml-auto z-10"
-        style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
-      >
-        <PanelBtn
-          title="Toggle Sidebar (⌘B)"
-          active={panels.sidebarVisible}
-          onClick={panels.onToggleSidebar}
-        >
-          <IconSidebar active={panels.sidebarVisible} />
-        </PanelBtn>
-        <PanelBtn
-          title="Toggle Minimap"
-          active={panels.minimapVisible}
-          onClick={panels.onToggleMinimap}
-        >
-          <IconMinimap active={panels.minimapVisible} />
-        </PanelBtn>
-        <PanelBtn
-          title="Toggle Terminal (⌃`)"
-          active={panels.terminalVisible}
-          onClick={panels.onToggleTerminal}
-        >
-          <IconTerminal active={panels.terminalVisible} />
-        </PanelBtn>
-      </div>
-    </div>
-  );
-}
-
 function PanelBtn({
   children,
   title,
@@ -203,5 +78,56 @@ function PanelBtn({
     >
       {children}
     </button>
+  );
+}
+
+// ── MenuBar (now just a TitleBar) ─────────────────────────────────────────
+// Kept as "MenuBar" export so App.tsx import stays the same.
+
+export function MenuBar({ activeFileName, panels }: TitleBarProps) {
+  return (
+    <div
+      data-tauri-drag-region
+      className="relative flex items-center h-9 bg-bg-app border-b border-border-subtle shrink-0 select-none"
+      style={{ WebkitAppRegion: "drag" } as React.CSSProperties}
+    >
+      {/* Traffic-light safe zone — must be draggable and empty */}
+      <div
+        className="w-[80px] h-full shrink-0"
+        style={{ WebkitAppRegion: "drag" } as React.CSSProperties}
+      />
+
+      {/* Centered title */}
+      <div
+        className="absolute inset-0 flex items-center justify-center pointer-events-none"
+        style={{ WebkitAppRegion: "drag" } as React.CSSProperties}
+      >
+        <span className="text-[13px] tracking-tight">
+          <span className="font-semibold text-text-main">Diablo</span>
+          {activeFileName && (
+            <>
+              <span className="mx-1.5 text-text-muted opacity-50">—</span>
+              <span className="text-text-muted opacity-80">{activeFileName}</span>
+            </>
+          )}
+        </span>
+      </div>
+
+      {/* Right: panel toggles */}
+      <div
+        className="flex items-center gap-0.5 px-2 ml-auto z-10"
+        style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
+      >
+        <PanelBtn title="Toggle Sidebar (⌘B)" active={panels.sidebarVisible} onClick={panels.onToggleSidebar}>
+          <IconSidebar active={panels.sidebarVisible} />
+        </PanelBtn>
+        <PanelBtn title="Toggle Minimap" active={panels.minimapVisible} onClick={panels.onToggleMinimap}>
+          <IconMinimap active={panels.minimapVisible} />
+        </PanelBtn>
+        <PanelBtn title="Toggle Terminal (⌃`)" active={panels.terminalVisible} onClick={panels.onToggleTerminal}>
+          <IconTerminal active={panels.terminalVisible} />
+        </PanelBtn>
+      </div>
+    </div>
   );
 }
