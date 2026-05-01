@@ -6,9 +6,12 @@ import { FileExplorer } from "./panels/FileExplorer";
 import { SearchPanel } from "./panels/SearchPanel";
 import { GitPanel } from "./panels/GitPanel";
 import { TerminalPane } from "./panels/TerminalPane";
+import { ChatPanel } from "./panels/ChatPanel";
+import { DiffReview } from "./panels/DiffReview";
 import { MonacoEditor } from "./editor/MonacoEditor";
 import { useEditorStore } from "./store/editor";
 import { useGitStore } from "./store/git";
+import { useAgentStore } from "./store/agent";
 import { MenuBar } from "./layout/MenuBar";
 import { StatusBar } from "./layout/StatusBar";
 import { Breadcrumb } from "./layout/Breadcrumb";
@@ -183,7 +186,9 @@ export default function App() {
   const [gitPanelHeight, setGitPanelHeight] = useState(260);
   const { refresh: refreshGit, status: gitStatus } = useGitStore();
   const [terminalVisible, setTerminalVisible] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
+  const { pendingDiffs } = useAgentStore();
   const dragRef = useRef<{ startX: number; startWidth: number } | null>(null);
   const gitDragRef = useRef<{ startY: number; startHeight: number } | null>(
     null,
@@ -313,6 +318,9 @@ export default function App() {
       } else if (e.key === "b") {
         e.preventDefault();
         setSidebarVisible((v) => !v);
+      } else if (e.key === "i") {
+        e.preventDefault();
+        setChatOpen((v) => !v);
       } else if (e.key === "=" || e.key === "+") {
         e.preventDefault();
         const { fontSize } = useEditorStore.getState().settings;
@@ -486,6 +494,7 @@ export default function App() {
         }}
       />
 
+      {pendingDiffs.length > 0 && <DiffReview />}
       <div className="flex flex-1 overflow-hidden">
         {sidebarVisible && (
           <>
@@ -596,6 +605,9 @@ export default function App() {
             </div>
           )}
         </div>
+        {chatOpen && (
+          <ChatPanel onClose={() => setChatOpen(false)} />
+        )}
       </div>
       <StatusBar
         cursorPos={cursorPos}

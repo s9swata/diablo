@@ -423,16 +423,16 @@
   Verify: type in function body, ghost text appears after 300ms pause. ✅
 
   ---
-  Phase 4 — Chat + Apply (Week 4–5)
+  Phase 4 — Chat + Apply ✅ COMPLETED
 
   Goal: Agent can read and edit files.
 
-  - Chat panel UI — message list, input, mode switcher (Ask/Edit/Agent)
-  - SSE streaming from /chat → tokens stream into UI
-  - Context assembly v1: open file + rules + diagnostics
-  - SEARCH/REPLACE block parser
-  - Monaco diff editor wired to apply flow
-  - Accept/reject UI
+  - Chat panel UI — message list, input, mode switcher (Ask/Edit/Agent) ✅
+  - SSE streaming from /chat → tokens stream into UI ✅
+  - Context assembly v1: open file + rules + diagnostics ✅
+  - SEARCH/REPLACE block parser ✅
+  - Monaco diff editor wired to apply flow ✅
+  - Accept/reject UI ✅
 
   Verify: ask agent to refactor function, diff appears, accept applies change.
 
@@ -643,9 +643,9 @@ Pre-task commit capturing state before component system refactor.
 | Native menu bar | ✅ Done | File/Edit/View via Tauri macOS API |
 | UI component system | ✅ Done | Button, Modal, Select in `ui/primitives.tsx` |
 | LSP | ✅ Done | Hover, completion, definition, diagnostics via language servers |
-| Chat / Agent | ⬜ Not started | Phase 4 |
+| Chat / Agent | ✅ Done | SSE streaming, 3 modes, context assembly, API key |
 | RAG / Indexer | ⬜ Not started | Phase 5 |
-| Diff review UI | ⬜ Not started | Phase 7 |
+| Diff review UI | ✅ Done | Monaco DiffEditor, accept/reject |
 | Command palette | ⬜ Not started | Phase 8 |
 
 ---
