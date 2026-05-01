@@ -1,15 +1,32 @@
-*, *::before, *::after {
+@import "tailwindcss";
+
+@theme {
+  --color-bg-app: #0a0a0a;
+  --color-bg-sidebar: #121212;
+  --color-border-subtle: #262626;
+  --color-text-main: #e5e5e5;
+  --color-text-muted: #a3a3a3;
+  --color-primary: #3b82f6;
+  --color-hover: #1f1f1f;
+  --color-accent: #60a5fa;
+}
+
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
-html, body, #root {
+html,
+body,
+#root {
   height: 100%;
   width: 100%;
   overflow: hidden;
-  background: #1e1e1e;
-  color: #d4d4d4;
+  background-color: var(--color-bg-app);
+  color: var(--color-text-main);
   font-family: 'Segoe UI', system-ui, sans-serif;
   font-size: 13px;
 }

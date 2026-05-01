@@ -77,7 +77,7 @@ export function SearchPanel({ autoFocus }: { autoFocus?: boolean }) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", flex: 1, overflow: "hidden" }}>
-      <div style={{ padding: "6px 8px", borderBottom: "1px solid #333" }}>
+      <div style={{ padding: "8px 10px", borderBottom: "1px solid #333" }}>
         <div
           style={{
             display: "flex",
@@ -86,7 +86,7 @@ export function SearchPanel({ autoFocus }: { autoFocus?: boolean }) {
             background: "#3c3c3c",
             border: "1px solid #555",
             borderRadius: 3,
-            padding: "3px 6px",
+            padding: "5px 8px",
           }}
         >
           <input
@@ -135,7 +135,7 @@ export function SearchPanel({ autoFocus }: { autoFocus?: boolean }) {
           <div key={g.file}>
             <div
               style={{
-                padding: "4px 8px",
+                padding: "5px 10px",
                 fontSize: 11,
                 color: "#bbb",
                 background: "#2a2d2e",
@@ -156,7 +156,7 @@ export function SearchPanel({ autoFocus }: { autoFocus?: boolean }) {
                 onMouseEnter={(e) => (e.currentTarget.style.background = "#2a2d2e")}
                 onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
                 style={{
-                  padding: "2px 8px 2px 16px",
+                  padding: "4px 10px 4px 20px",
                   fontSize: 11,
                   cursor: "pointer",
                   color: "#888",

@@ -41,7 +41,7 @@ export function TerminalPane({ onClose }: { onClose: () => void }) {
                 alignItems: "center",
                 gap: 6,
                 height: "100%",
-                padding: "0 10px",
+                padding: "0 12px",
                 cursor: "pointer",
                 background: isActive ? "#1e1e1e" : "transparent",
                 borderRight: "1px solid #333",
@@ -65,7 +65,7 @@ export function TerminalPane({ onClose }: { onClose: () => void }) {
         <span
           onClick={addTab}
           title="New Terminal"
-          style={{ padding: "0 10px", fontSize: 16, color: "#666", cursor: "pointer", lineHeight: "28px", userSelect: "none" }}
+          style={{ padding: "0 12px", fontSize: 16, color: "#666", cursor: "pointer", lineHeight: "28px", userSelect: "none" }}
           onMouseEnter={(e) => (e.currentTarget.style.color = "#ccc")}
           onMouseLeave={(e) => (e.currentTarget.style.color = "#666")}
         >
@@ -75,7 +75,7 @@ export function TerminalPane({ onClose }: { onClose: () => void }) {
         <span
           onClick={onClose}
           title="Close Terminal"
-          style={{ padding: "0 10px", fontSize: 11, color: "#666", cursor: "pointer", lineHeight: "28px" }}
+          style={{ padding: "0 12px", fontSize: 11, color: "#666", cursor: "pointer", lineHeight: "28px" }}
           onMouseEnter={(e) => (e.currentTarget.style.color = "#ccc")}
           onMouseLeave={(e) => (e.currentTarget.style.color = "#666")}
         >

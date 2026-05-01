@@ -160,12 +160,13 @@ function EntryRow({
         onClick={isRenaming ? undefined : toggle}
         onContextMenu={(e) => { e.preventDefault(); onContextMenu(e, entry); }}
         style={{
-          paddingLeft: depth * 12 + 8,
+          paddingLeft: depth * 12 + 10,
+          paddingRight: 8,
           cursor: "pointer",
           display: "flex",
           alignItems: "center",
-          gap: 4,
-          height: 22,
+          gap: 5,
+          height: 24,
           background: isActive ? "#094771" : "transparent",
           color: isActive ? "#fff" : "#ccc",
           userSelect: "none",
@@ -330,7 +331,7 @@ export function FileExplorer() {
     : workspaceRoot ?? "";
 
   if (!workspaceRoot) {
-    return <div style={{ padding: 12, color: "#666", fontSize: 12 }}>No folder open</div>;
+    return <div style={{ padding: "16px 12px", color: "#666", fontSize: 12 }}>No folder open</div>;
   }
 
   return (
@@ -355,7 +356,7 @@ export function FileExplorer() {
 
       {/* Inline new item input */}
       {newItemState && (
-        <div style={{ paddingLeft: 22, paddingTop: 2 }}>
+        <div style={{ paddingLeft: 22, paddingTop: 4, paddingBottom: 4 }}>
           <input
             ref={newItemRef}
             value={newItemName}
@@ -414,7 +415,7 @@ export function FileExplorer() {
             ] : []),
           ].map((item, i) =>
             item.action === null ? (
-              <div key={i} style={{ padding: "2px 12px", color: "#555", cursor: "default", fontSize: 10 }}>
+              <div key={i} style={{ padding: "3px 14px", color: "#555", cursor: "default", fontSize: 10 }}>
                 {item.label}
               </div>
             ) : (
@@ -424,7 +425,7 @@ export function FileExplorer() {
                 onMouseEnter={(e) => (e.currentTarget.style.background = "#094771")}
                 onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
                 style={{
-                  padding: "6px 12px",
+                  padding: "7px 14px",
                   cursor: "pointer",
                   color: (item as { danger?: boolean }).danger ? "#f48771" : "#ccc",
                 }}

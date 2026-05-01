@@ -233,7 +233,7 @@ export default function App() {
         {sidebarVisible && (
           <>
             <div style={{ width: sidebarWidth }} className="bg-bg-sidebar border-r border-border-subtle flex flex-col shrink-0 overflow-hidden">
-              <div className="px-3 text-[11px] text-text-muted uppercase tracking-wider font-semibold border-b border-border-subtle select-none flex-shrink-0 flex h-9 items-center gap-1">
+              <div className="px-2 text-[11px] text-text-muted uppercase tracking-wider font-semibold border-b border-border-subtle select-none flex-shrink-0 flex h-9 items-center gap-0.5">
                 {(["explorer", "search", "git"] as SidebarMode[]).map((mode) => (
                   <span
                     key={mode}
@@ -241,7 +241,7 @@ export default function App() {
                       setSidebarMode(mode);
                       if (mode === "git" && workspaceRoot) refreshGit(workspaceRoot);
                     }}
-                    className={`cursor-pointer px-2 h-full flex items-center gap-1 border-b-2 transition-colors ${
+                    className={`cursor-pointer px-2.5 h-full flex items-center gap-1.5 border-b-2 transition-colors ${
                       sidebarMode === mode
                         ? "border-accent text-text-main"
                         : "border-transparent hover:text-text-main"

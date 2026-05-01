@@ -97,6 +97,9 @@ export function MenuBar({ activeFileName, panels }: TitleBarProps) {
         style={{ WebkitAppRegion: "drag" } as React.CSSProperties}
       />
 
+      {/* Flex spacer so panel buttons get pushed to the right */}
+      <div className="flex-1" style={{ WebkitAppRegion: "drag" } as React.CSSProperties} />
+
       {/* Centered title */}
       <div
         className="absolute inset-0 flex items-center justify-center pointer-events-none"

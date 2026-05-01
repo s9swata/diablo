@@ -56,7 +56,7 @@ function FileRow({
       style={{
         display: "flex",
         alignItems: "center",
-        padding: "2px 8px 2px 20px",
+        padding: "4px 10px 4px 22px",
         fontSize: 12,
         color: "#ccc",
         gap: 6,
@@ -158,7 +158,7 @@ function Section({
           display: "flex",
           alignItems: "center",
           gap: 4,
-          padding: "4px 8px",
+          padding: "6px 10px",
           fontSize: 11,
           color: "#bbb",
           cursor: "pointer",
@@ -191,13 +191,13 @@ export function GitPanel() {
 
   if (!workspaceRoot) {
     return (
-      <div style={{ padding: 12, fontSize: 12, color: "#666" }}>No folder open.</div>
+      <div style={{ padding: "16px 12px", fontSize: 12, color: "#666" }}>No folder open.</div>
     );
   }
 
   if (!status?.is_repo) {
     return (
-      <div style={{ padding: 12, fontSize: 12, color: "#666" }}>
+      <div style={{ padding: "16px 12px", fontSize: 12, color: "#666" }}>
         {loading ? "Loading..." : "Not a git repository."}
       </div>
     );
@@ -210,7 +210,7 @@ export function GitPanel() {
         style={{
           display: "flex",
           alignItems: "center",
-          padding: "4px 8px",
+          padding: "5px 8px",
           gap: 4,
           borderBottom: "1px solid #333",
           flexShrink: 0,
@@ -228,7 +228,7 @@ export function GitPanel() {
 
       {opError && (
         <div
-          style={{ padding: "4px 8px", fontSize: 11, color: "#f48771", background: "#3c1a1a", flexShrink: 0 }}
+          style={{ padding: "6px 10px", fontSize: 11, color: "#f48771", background: "#3c1a1a", flexShrink: 0 }}
           onClick={clearError}
           title="Click to dismiss"
         >
@@ -238,7 +238,7 @@ export function GitPanel() {
 
       <div style={{ flex: 1, overflowY: "auto" }}>
         {/* Commit area */}
-        <div style={{ padding: "6px 8px", borderBottom: "1px solid #2a2a2a", flexShrink: 0 }}>
+        <div style={{ padding: "8px 10px", borderBottom: "1px solid #2a2a2a", flexShrink: 0 }}>
           <textarea
             value={commitMessage}
             onChange={(e) => setCommitMessage(e.target.value)}
@@ -284,7 +284,7 @@ export function GitPanel() {
         {/* Staged changes */}
         <Section title="Staged" count={staged.length} defaultOpen={staged.length > 0}>
           {staged.length === 0 ? (
-            <div style={{ padding: "4px 20px", fontSize: 11, color: "#555" }}>No staged changes</div>
+            <div style={{ padding: "6px 22px", fontSize: 11, color: "#555" }}>No staged changes</div>
           ) : (
             staged.map((f) => (
               <FileRow key={f.path} file={f} side="staged" cwd={cwd} onAction={() => {}} />
@@ -295,7 +295,7 @@ export function GitPanel() {
         {/* Unstaged changes */}
         <Section title="Changes" count={unstaged.length}>
           {unstaged.length === 0 ? (
-            <div style={{ padding: "4px 20px", fontSize: 11, color: "#555" }}>No changes</div>
+            <div style={{ padding: "6px 22px", fontSize: 11, color: "#555" }}>No changes</div>
           ) : (
             <>
               <div style={{ display: "flex", justifyContent: "flex-end", padding: "0 8px 2px" }}>
@@ -328,7 +328,7 @@ export function GitPanel() {
               <div
                 key={c.hash}
                 style={{
-                  padding: "3px 12px 3px 20px",
+                  padding: "5px 12px 5px 22px",
                   fontSize: 11,
                   color: "#aaa",
                   display: "flex",
