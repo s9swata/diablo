@@ -378,19 +378,23 @@
   ---
   Build Phases
 
-  Phase 1 — Editor Shell (Week 1–2)
+  Phase 1 — Editor Shell ✅ COMPLETED
 
   Goal: Can open, edit, and save files.
 
-  - create-tauri-app → React + TypeScript template
-  - Install @monaco-editor/react
-  - Tauri commands: fs_read, fs_write, fs_list, fs_watch
-  - File explorer panel
-  - Open file on click → Monaco tab
-  - Auto-save on change (500ms debounce)
-  - Basic settings: theme, font size, tab size
+  - create-tauri-app → React + TypeScript template ✅
+  - Install @monaco-editor/react ✅
+  - Tauri commands: fs_read, fs_write, fs_list, fs_watch ✅
+  - File explorer panel ✅
+  - Open file on click → Monaco tab ✅
+  - Auto-save on change (500ms debounce) ✅
+  - Basic settings: theme, font size, tab size ✅
+  - File context menu: rename, delete, new file, new folder ✅
+  - Dirty close confirmation modal ✅
+  - Tab middle-click to close ✅
+  - Auto-open folder picker when creating file with no workspace ✅
 
-  Verify: open project folder, edit files, changes persist on disk.
+  Verify: open project folder, edit files, changes persist on disk. ✅
 
   ---
   Phase 2 — LSP (Week 3)
@@ -411,11 +415,12 @@
 
   Goal: Ghost text while typing.
 
-  - registerInlineCompletionsProvider → POST /completions
-  - 300ms debounce + cancellation on keypress
-  - Tab to accept, Escape to reject
+  - registerInlineCompletionsProvider → POST /completions ✅
+  - 300ms debounce + cancellation on keypress ✅
+  - Tab to accept, Escape to reject ✅
+  - disposeInlineCompletions implemented to satisfy Monaco runtime ✅
 
-  Verify: type in function body, ghost text appears after 300ms pause.
+  Verify: type in function body, ghost text appears after 300ms pause. ✅
 
   ---
   Phase 4 — Chat + Apply (Week 4–5)
@@ -447,14 +452,14 @@
   Verify: open large project, index completes, ask "@codebase how does auth work?", get relevant chunks.
 
   ---
-  Phase 6 — Terminal + Commands (Week 7)
+  Phase 6 — Terminal + Commands 🔄 PARTIAL
 
   Goal: Agent can run commands.
 
-  - portable-pty → Tauri commands: pty_create, pty_write, pty_kill
-  - xterm.js terminal panel
-  - run_command tool — captures stdout/stderr
-  - open_terminal tool — interactive terminal panel
+  - portable-pty → Tauri commands: pty_create, pty_write, pty_kill ✅
+  - xterm.js terminal panel ✅ (toggle via ⌃` or View menu)
+  - run_command tool — captures stdout/stderr ⬜
+  - open_terminal tool — interactive terminal panel ⬜
 
   Verify: ask agent to run tests, agent runs cargo test, reads output, reports failures.
 
@@ -472,14 +477,16 @@
   Verify: ask agent to add feature touching 3 files, agent reads codebase, edits, runs tests, reports.
 
   ---
-  Phase 8 — Polish (Week 9)
+  Phase 8 — Polish 🔄 PARTIAL
 
-  - MCP support
-  - .diablo/rules.md UI
-  - Git panel (status, diff, stage, commit)
-  - Command palette
-  - Keyboard shortcuts
-  - Per-project workspace settings
+  - MCP support ⬜
+  - .diablo/rules.md UI ⬜
+  - Git panel (status, diff, stage, commit) ✅ (status + file list + stage/unstage + commit done)
+  - Global file search panel ✅ (ripgrep-backed, persistent tab)
+  - Command palette ⬜
+  - Keyboard shortcuts ✅ (⌘S save, ⌘W close, ⌘B sidebar, ⌘⇧F search, ⌘⇧G git, ⌃` terminal, ⌘+/- zoom)
+  - Per-project workspace settings ⬜
+  - Native macOS menu bar (File/Edit/View) ✅ via Tauri menu API
 
   ---
   Key Design Decisions (do not revisit without strong reason)
@@ -503,3 +510,142 @@
   └────────────────────────────────────┴───────────────────────────────────────────────────────────────────────────────────────────────────┘
 
   ---
+
+## Build Log
+
+Chronological record of all committed work. Use this to understand current state and avoid re-doing done work.
+
+---
+
+### `48f0a2c` — first commit
+Initial repo scaffold. Tauri v2 + React + Monaco skeleton wired up.
+
+---
+
+### `198a0ea` — fix: file editing UI
+- Fixed save data-loss bug (content was not flushed on save)
+- New file modal added
+- File explorer refresh after create/delete
+
+---
+
+### `e92e86c` — fix: Rust compiler warnings
+Cleaned all `#[allow(dead_code)]` / unused import warnings in `src-tauri/src/`. No behavior change.
+
+---
+
+### `694a9ec` — feat: auto-prompt folder picker
+When user hits New File with no workspace open → folder picker opens automatically → file created in selected root.
+
+---
+
+### `b63cce9` — feat(phase-3): FIM inline completions
+- `MonacoEditor.tsx`: registered `InlineCompletionsProvider` for all languages
+- Debounced 300ms, cancels on keypress
+- POST `/completions` → Cloudflare gateway → qwen2.5-coder-32b FIM
+- Phase 3 complete.
+
+---
+
+### `325daa3` — fix: disposeInlineCompletions
+Added no-op `disposeInlineCompletions()` to satisfy Monaco's provider interface contract (runtime error fix).
+
+---
+
+### `070e476` — feat: git integration, terminal, search, editor improvements
+Large feature drop covering multiple phases:
+
+**Git panel** (Phase 8 partial)
+- `GitPanel.tsx` — shows changed files, stage/unstage toggle, commit message input, commit button
+- `store/git.ts` — Zustand store: `status`, `refresh`, file list with index/work status
+- Tauri commands: `git_status`, `git_stage`, `git_unstage`, `git_commit`
+- Git decorations on file explorer: M/A/D/U badges per file and directory
+
+**Terminal** (Phase 6 partial)
+- `TerminalPane.tsx` — xterm.js PTY terminal, toggle via ⌃`
+- Tauri commands: `pty_create`, `pty_write`, `pty_resize`, `pty_kill`
+- Resizable height panel at bottom of editor area
+
+**Search** (Phase 8 partial)
+- `SearchPanel.tsx` — global ripgrep-backed search, results grouped by file with line previews
+- Click result → opens file and jumps to line in Monaco
+- Persistent panel state (query + results survive tab switch)
+
+**Editor**
+- Word wrap toggle (⌥Z)
+- Zoom in/out (⌘=/⌘-)
+- Minimap toggle
+- LSP install progress displayed in StatusBar
+
+---
+
+### `61e8f25` — feat: macOS-style title bar
+- Centered app title "Diablo — filename" in title bar
+- Panel toggle buttons (sidebar, minimap, terminal) right-aligned
+- `data-tauri-drag-region` on title bar; `WebkitAppRegion: no-drag` on buttons
+
+---
+
+### `34f56c4` — feat: native macOS system menu bar
+- Moved File/Edit/View menus out of custom UI into native macOS menu bar via Tauri `Menu` API
+- Rust: `src-tauri/src/menu.rs` — builds menu, emits `menu-action` events to frontend
+- `App.tsx`: listens for `menu-action` events, dispatches to handlers
+
+---
+
+### `f80262e` — ui: padding fix pass
+Systematic pass fixing padding regressions from Tailwind v4 Vite HMR issue:
+- Tabs, panels, breadcrumb, terminal, rows all converted to inline `style` props
+- Established rule: **never use Tailwind `px-*`/`py-*`/`gap-*`/`w-*`/`h-*` — use inline style**
+
+---
+
+### `8675296` — feat(ui): Zed-style nav bar + persistent search tab
+- Removed custom nav/toolbar; adopted Zed-style tab bar where search is a virtual tab
+- Search tab persists while open (query + results survive switching away and back)
+- Git panel now lives as a vertical split at bottom of sidebar, user-resizable via drag handle
+- StatusBar nav buttons (Explorer, Search, Git) toggle panels
+
+---
+
+### `16e35f7` — checkpoint: before ui audit
+Pre-task commit capturing state before component system refactor.
+
+---
+
+### `4c989a3` — feat(ui): component system + tailwind spacing audit
+
+**New file: `app/src/ui/primitives.tsx`**
+- `Button` — 3 variants: `primary`, `ghost`, `danger`. Replaces fragile `btnClass` string + `!override` pattern.
+- `Modal` — shared overlay backdrop. Removes 4× repeated `fixed inset-0 bg-black/50` boilerplate.
+- `Select` — shared select styling. Collapses 3× identical selects in TabBar.
+
+**FileExplorer fixes**
+- Removed `▸`/`▾` chevron dot before folder/file icons (expand still works via click)
+- Git status badge right-aligned: filename left, `M`/`A`/`D` pushed to right with `justifyContent: space-between`
+
+**Tailwind spacing audit — all 6 files clean**
+- `App.tsx`, `MenuBar.tsx`, `TabBar.tsx`, `StatusBar.tsx`, `Breadcrumb.tsx`, `FileExplorer.tsx`
+- All `px-*`, `py-*`, `p-*`, `gap-*`, `mt-*`, `mx-*`, `w-*`, `h-*`, `min-w-*` → inline `style` props
+
+---
+
+## Current State Summary
+
+| Area | Status | Notes |
+|---|---|---|
+| File editing | ✅ Done | Open, edit, save, tabs, dirty indicator |
+| File explorer | ✅ Done | Tree, context menu, rename, delete, git decorations |
+| Inline completions | ✅ Done | FIM via CF gateway, 300ms debounce |
+| Terminal | ✅ Done | PTY xterm.js, ⌃` toggle, resizable |
+| Git panel | ✅ Done | Status, stage/unstage, commit |
+| Global search | ✅ Done | ripgrep, persistent tab, jump to line |
+| Native menu bar | ✅ Done | File/Edit/View via Tauri macOS API |
+| UI component system | ✅ Done | Button, Modal, Select in `ui/primitives.tsx` |
+| LSP | ⬜ Not started | Phase 2 |
+| Chat / Agent | ⬜ Not started | Phase 4 |
+| RAG / Indexer | ⬜ Not started | Phase 5 |
+| Diff review UI | ⬜ Not started | Phase 7 |
+| Command palette | ⬜ Not started | Phase 8 |
+
+---
