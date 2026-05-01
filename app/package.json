@@ -4,10 +4,10 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --config vite.config.mjs",
-    "build": "tsc && vite build --config vite.config.mjs",
+    "dev": "vite",
+    "build": "tsc && vite build",
     "preview": "vite preview",
-    "tauri": "PATH=\"$HOME/.cargo/bin:$PATH\" tauri"
+    "tauri": "tauri"
   },
   "packageManager": "bun@1.2.19",
   "dependencies": {
