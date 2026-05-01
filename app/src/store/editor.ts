@@ -10,6 +10,26 @@ export interface Settings {
   theme: "vs-dark" | "light";
   fontSize: number;
   tabSize: number;
+  wordWrap: "on" | "off";
+  minimap: boolean;
+}
+
+const SETTINGS_KEY = "diablo_settings";
+
+function loadSettings(): Settings {
+  try {
+    const raw = localStorage.getItem(SETTINGS_KEY);
+    if (raw) return { ...defaultSettings(), ...JSON.parse(raw) };
+  } catch {}
+  return defaultSettings();
+}
+
+function defaultSettings(): Settings {
+  return { theme: "vs-dark", fontSize: 14, tabSize: 2, wordWrap: "off", minimap: false };
+}
+
+function saveSettings(s: Settings) {
+  try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(s)); } catch {}
 }
 
 interface EditorStore {
@@ -34,7 +54,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
   workspaceRoot: null,
   openFiles: [],
   activeFile: null,
-  settings: { theme: "vs-dark", fontSize: 14, tabSize: 2 },
+  settings: loadSettings(),
   diagnostics: {},
 
   setWorkspaceRoot: (root) => set({ workspaceRoot: root }),
@@ -80,7 +100,11 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
   },
 
   updateSettings: (s) =>
-    set((st) => ({ settings: { ...st.settings, ...s } })),
+    set((st) => {
+      const next = { ...st.settings, ...s };
+      saveSettings(next);
+      return { settings: next };
+    }),
 
   setDiagnostics: (uri, diags) =>
     set((st) => ({ diagnostics: { ...st.diagnostics, [uri]: diags } })),

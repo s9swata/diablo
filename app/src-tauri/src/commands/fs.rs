@@ -77,6 +77,30 @@ fn list_dir(path: &str, recursive: bool) -> Result<Vec<DirEntry>> {
 }
 
 #[tauri::command]
+pub async fn fs_rename(old_path: String, new_path: String) -> Result<(), String> {
+    tokio::fs::rename(&old_path, &new_path)
+        .await
+        .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub async fn fs_delete(path: String) -> Result<(), String> {
+    let meta = tokio::fs::metadata(&path).await.map_err(|e| e.to_string())?;
+    if meta.is_dir() {
+        tokio::fs::remove_dir_all(&path).await.map_err(|e| e.to_string())
+    } else {
+        tokio::fs::remove_file(&path).await.map_err(|e| e.to_string())
+    }
+}
+
+#[tauri::command]
+pub async fn fs_mkdir(path: String) -> Result<(), String> {
+    tokio::fs::create_dir_all(&path)
+        .await
+        .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
 pub async fn fs_watch(
     app: AppHandle,
     path: String,

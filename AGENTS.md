@@ -115,6 +115,14 @@ python3 -c "from graphify.ingest import query; query('What does X do?')"
 - Preserve existing functionality unless explicitly modifying it
 - Write clean, readable, and maintainable code
 
+### Runtime & Package Manager
+
+- **Always use `bun`** as the runtime and package manager.
+- NEVER use `npm`, `npx`, `yarn`, or `pnpm`.
+- Install packages: `bun add <pkg>`
+- Run scripts: `bun run <script>` or `bunx <pkg>`
+- Execute files: `bun <file>`
+
 ---
 
 ## ✅ Task Execution Workflow
