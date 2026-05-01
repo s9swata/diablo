@@ -397,18 +397,18 @@
   Verify: open project folder, edit files, changes persist on disk. ✅
 
   ---
-  Phase 2 — LSP (Week 3)
+  Phase 2 — LSP ✅ COMPLETED
 
   Goal: Language intelligence inline.
 
-  - LspManager in Rust — spawn/pipe/kill language servers
-  - Tauri commands: lsp_start, lsp_send, lsp_stop
-  - Tauri event: lsp_msg
-  - Monaco providers: hover, completion, definition, diagnostics
-  - Auto-detect language on file open → start server
-  - Server configs: rust-analyzer, typescript-language-server, pyright
+  - LspManager in Rust — spawn/pipe/kill language servers ✅
+  - Tauri commands: lsp_start, lsp_send, lsp_stop ✅
+  - Tauri event: lsp_msg ✅
+  - Monaco providers: hover, completion, definition, diagnostics ✅
+  - Auto-detect language on file open → start server ✅
+  - Server configs: rust-analyzer, typescript-language-server, pyright ✅
 
-  Verify: open Rust file, errors appear inline, hover shows types, go-to-def works.
+  Verify: open Rust file, errors appear inline, hover shows types, go-to-def works. ✅
 
   ---
   Phase 3 — Inline Completions ✅ COMPLETED
@@ -642,7 +642,7 @@ Pre-task commit capturing state before component system refactor.
 | Global search | ✅ Done | ripgrep, persistent tab, jump to line |
 | Native menu bar | ✅ Done | File/Edit/View via Tauri macOS API |
 | UI component system | ✅ Done | Button, Modal, Select in `ui/primitives.tsx` |
-| LSP | ⬜ Not started | Phase 2 |
+| LSP | ✅ Done | Hover, completion, definition, diagnostics via language servers |
 | Chat / Agent | ⬜ Not started | Phase 4 |
 | RAG / Indexer | ⬜ Not started | Phase 5 |
 | Diff review UI | ⬜ Not started | Phase 7 |
