@@ -21,8 +21,20 @@ type ChatCompletionRequest = {
   messages?: OpenAiMessage[]
   stream?: boolean
   max_tokens?: number
+  max_completion_tokens?: number
   temperature?: number
   top_p?: number
+  stop?: string | string[] | null
+  stream_options?: Record<string, unknown> | null
+  reasoning_effort?: 'low' | 'medium' | 'high' | null
+  chat_template_kwargs?: {
+    thinking?: boolean
+    clear_thinking?: boolean
+    [key: string]: unknown
+  }
+  tools?: unknown[]
+  tool_choice?: unknown
+  response_format?: unknown
 }
 
 type CompletionRequest = {
@@ -94,22 +106,30 @@ async function handleChatCompletions(request: Request, env: Env): Promise<Respon
     role: message.role,
     content: normalizeContent(message.content),
   }))
-  const id = makeId('chatcmpl')
-  const created = now()
   const payload = generationPayload({
     messages,
-    max_tokens: body.max_tokens ?? 4096,
+    max_tokens: body.max_tokens,
+    max_completion_tokens: body.max_completion_tokens ?? (body.max_tokens === undefined ? 4096 : undefined),
     stream: body.stream === true,
     temperature: body.temperature,
     top_p: body.top_p,
+    stop: body.stop,
+    stream_options: body.stream_options,
+    reasoning_effort: body.reasoning_effort,
+    chat_template_kwargs: {
+      thinking: false,
+      ...body.chat_template_kwargs,
+    },
+    tools: body.tools,
+    tool_choice: body.tool_choice,
+    response_format: body.response_format,
   })
 
   await logUsage(env, 'v1/chat/completions', model)
 
   if (body.stream === true) {
     const upstream = await env.AI.run(model, payload as any) as unknown as ReadableStream
-    console.log('[openai.chat.stream.raw]', { model, payload })
-    return new Response(toOpenAiSse(upstream, id, created, model, 'chat'), {
+    return new Response(upstream, {
       headers: {
         ...corsHeaders(),
         'Content-Type': 'text/event-stream',
@@ -119,13 +139,16 @@ async function handleChatCompletions(request: Request, env: Env): Promise<Respon
   }
 
   const response = await env.AI.run(model, payload as any)
-  console.log('[openai.chat.raw]', response)
+  if (isOpenAiCompletion(response)) {
+    return Response.json({ ...response, model }, { headers: corsHeaders() })
+  }
+
   const content = extractContent(response)
 
   return Response.json({
-    id,
+    id: makeId('chatcmpl'),
     object: 'chat.completion',
-    created,
+    created: now(),
     model,
     choices: [{
       index: 0,
@@ -157,7 +180,6 @@ async function handleCompletions(request: Request, env: Env): Promise<Response> 
 
   if (body.stream === true) {
     const upstream = await env.AI.run(model, payload as any) as unknown as ReadableStream
-    console.log('[openai.completions.stream.raw]', { model, payload })
     return new Response(toOpenAiSse(upstream, id, created, model, 'completion'), {
       headers: {
         ...corsHeaders(),
@@ -168,7 +190,6 @@ async function handleCompletions(request: Request, env: Env): Promise<Response> 
   }
 
   const response = await env.AI.run(model, payload as any)
-  console.log('[openai.completions.raw]', response)
   const text = extractContent(response)
 
   return Response.json({
@@ -198,7 +219,6 @@ async function handleEmbeddings(request: Request, env: Env): Promise<Response> {
   for (let i = 0; i < inputs.length; i += 100) {
     const batch = inputs.slice(i, i + 100)
     const response = await env.AI.run(model, { text: batch } as any)
-    console.log('[openai.embeddings.raw]', response)
     embeddings.push(...(((response as any).data ?? []) as number[][]))
   }
 
@@ -236,6 +256,14 @@ function extractContent(response: unknown): string {
     ''
 }
 
+function isOpenAiCompletion(response: unknown): response is Record<string, unknown> {
+  const value = response as any
+  return typeof value === 'object' &&
+    value !== null &&
+    typeof value.object === 'string' &&
+    Array.isArray(value.choices)
+}
+
 function toOpenAiSse(
   upstream: ReadableStream,
   id: string,
@@ -259,7 +287,6 @@ function toOpenAiSse(
     },
     transform(chunk, controller) {
       const decoded = decodeStreamChunk(chunk)
-      console.log('[openai.stream.chunk.raw]', decoded)
       buffer += decoded
       const events = buffer.split('\n\n')
       buffer = events.pop() ?? ''
