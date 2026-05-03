@@ -108,6 +108,7 @@ async function handleChatCompletions(request: Request, env: Env): Promise<Respon
 
   if (body.stream === true) {
     const upstream = await env.AI.run(model, payload as any) as unknown as ReadableStream
+    console.log('[openai.chat.stream.raw]', { model, payload })
     return new Response(toOpenAiSse(upstream, id, created, model, 'chat'), {
       headers: {
         ...corsHeaders(),
@@ -118,6 +119,7 @@ async function handleChatCompletions(request: Request, env: Env): Promise<Respon
   }
 
   const response = await env.AI.run(model, payload as any)
+  console.log('[openai.chat.raw]', response)
   const content = extractContent(response)
 
   return Response.json({
@@ -155,6 +157,7 @@ async function handleCompletions(request: Request, env: Env): Promise<Response> 
 
   if (body.stream === true) {
     const upstream = await env.AI.run(model, payload as any) as unknown as ReadableStream
+    console.log('[openai.completions.stream.raw]', { model, payload })
     return new Response(toOpenAiSse(upstream, id, created, model, 'completion'), {
       headers: {
         ...corsHeaders(),
@@ -165,6 +168,7 @@ async function handleCompletions(request: Request, env: Env): Promise<Response> 
   }
 
   const response = await env.AI.run(model, payload as any)
+  console.log('[openai.completions.raw]', response)
   const text = extractContent(response)
 
   return Response.json({
@@ -194,6 +198,7 @@ async function handleEmbeddings(request: Request, env: Env): Promise<Response> {
   for (let i = 0; i < inputs.length; i += 100) {
     const batch = inputs.slice(i, i + 100)
     const response = await env.AI.run(model, { text: batch } as any)
+    console.log('[openai.embeddings.raw]', response)
     embeddings.push(...(((response as any).data ?? []) as number[][]))
   }
 
@@ -253,7 +258,9 @@ function toOpenAiSse(
       }
     },
     transform(chunk, controller) {
-      buffer += decodeStreamChunk(chunk)
+      const decoded = decodeStreamChunk(chunk)
+      console.log('[openai.stream.chunk.raw]', decoded)
+      buffer += decoded
       const events = buffer.split('\n\n')
       buffer = events.pop() ?? ''
       for (const event of events) writeStreamEvent(event, controller, id, created, model, kind)
