@@ -238,10 +238,9 @@ function toOpenAiSse(
   model: string,
   kind: 'chat' | 'completion'
 ): ReadableStream {
-  const decoder = new TextDecoder()
   let buffer = ''
 
-  return upstream.pipeThrough(new TransformStream<Uint8Array, Uint8Array>({
+  return upstream.pipeThrough(new TransformStream<unknown, Uint8Array>({
     start(controller) {
       if (kind === 'chat') {
         controller.enqueue(encoder.encode(`data: ${JSON.stringify({
@@ -254,29 +253,39 @@ function toOpenAiSse(
       }
     },
     transform(chunk, controller) {
-      buffer += decoder.decode(chunk, { stream: true })
-      const lines = buffer.split('\n')
-      buffer = lines.pop() ?? ''
-      for (const line of lines) writeStreamLine(line.trim(), controller, id, created, model, kind)
+      buffer += decodeStreamChunk(chunk)
+      const events = buffer.split('\n\n')
+      buffer = events.pop() ?? ''
+      for (const event of events) writeStreamEvent(event, controller, id, created, model, kind)
     },
     flush(controller) {
-      if (buffer.trim()) writeStreamLine(buffer.trim(), controller, id, created, model, kind)
+      if (buffer.trim()) writeStreamEvent(buffer, controller, id, created, model, kind)
       controller.enqueue(encoder.encode(`data: ${JSON.stringify(finalStreamChunk(id, created, model, kind))}\n\n`))
       controller.enqueue(encoder.encode('data: [DONE]\n\n'))
     },
   }))
 }
 
-function writeStreamLine(
-  line: string,
+function decodeStreamChunk(chunk: unknown): string {
+  if (typeof chunk === 'string') return chunk
+  return new TextDecoder().decode(chunk as BufferSource, { stream: true })
+}
+
+function writeStreamEvent(
+  event: string,
   controller: TransformStreamDefaultController<Uint8Array>,
   id: string,
   created: number,
   model: string,
   kind: 'chat' | 'completion'
 ) {
-  if (!line.startsWith('data:')) return
-  const payload = line.slice(5).trim()
+  const dataLines = event
+    .split('\n')
+    .map(line => line.trim())
+    .filter(line => line.startsWith('data:'))
+    .map(line => line.slice(5).trim())
+
+  const payload = dataLines.length > 0 ? dataLines.join('\n') : event.trim()
   if (!payload || payload === '[DONE]') return
 
   const token = extractStreamToken(payload)
@@ -326,10 +335,12 @@ function extractStreamToken(payload: string): string {
     const json = JSON.parse(payload)
     return json?.choices?.[0]?.delta?.content ??
       json?.choices?.[0]?.text ??
+      json?.delta?.content ??
+      json?.text ??
       json?.response ??
       ''
   } catch {
-    return ''
+    return payload
   }
 }
 
