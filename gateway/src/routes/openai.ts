@@ -129,7 +129,7 @@ async function handleChatCompletions(request: Request, env: Env): Promise<Respon
 
   if (body.stream === true) {
     const upstream = await env.AI.run(model, payload as any) as unknown as ReadableStream
-    return new Response(upstream, {
+    return new Response(normalizeChatSse(upstream, model), {
       headers: {
         ...corsHeaders(),
         'Content-Type': 'text/event-stream',
@@ -300,6 +300,41 @@ function toOpenAiSse(
   }))
 }
 
+function normalizeChatSse(upstream: ReadableStream, requestedModel: string): ReadableStream {
+  let buffer = ''
+
+  return upstream.pipeThrough(new TransformStream<unknown, Uint8Array>({
+    transform(chunk, controller) {
+      buffer += decodeStreamChunk(chunk)
+      const events = buffer.split('\n\n')
+      buffer = events.pop() ?? ''
+      for (const event of events) writeChatStreamEvent(event, controller, requestedModel)
+    },
+    flush(controller) {
+      if (buffer.trim()) writeChatStreamEvent(buffer, controller, requestedModel)
+    },
+  }))
+}
+
+function writeChatStreamEvent(
+  event: string,
+  controller: TransformStreamDefaultController<Uint8Array>,
+  requestedModel: string
+) {
+  const payload = extractSsePayload(event)
+  if (!payload) return
+  if (payload === '[DONE]') {
+    controller.enqueue(encoder.encode('data: [DONE]\n\n'))
+    return
+  }
+
+  const parsed = parseJsonObject(payload)
+  if (!parsed || !Array.isArray(parsed.choices)) return
+
+  parsed.model = requestedModel
+  controller.enqueue(encoder.encode(`data: ${JSON.stringify(parsed)}\n\n`))
+}
+
 function decodeStreamChunk(chunk: unknown): string {
   if (typeof chunk === 'string') return chunk
   return new TextDecoder().decode(chunk as BufferSource, { stream: true })
@@ -313,13 +348,7 @@ function writeStreamEvent(
   model: string,
   kind: 'chat' | 'completion'
 ) {
-  const dataLines = event
-    .split('\n')
-    .map(line => line.trim())
-    .filter(line => line.startsWith('data:'))
-    .map(line => line.slice(5).trim())
-
-  const payload = dataLines.length > 0 ? dataLines.join('\n') : event.trim()
+  const payload = extractSsePayload(event)
   if (!payload || payload === '[DONE]') return
 
   const token = extractStreamToken(payload)
@@ -342,6 +371,25 @@ function writeStreamEvent(
     }
 
   controller.enqueue(encoder.encode(`data: ${JSON.stringify(chunk)}\n\n`))
+}
+
+function extractSsePayload(event: string): string {
+  const dataLines = event
+    .split('\n')
+    .map(line => line.trim())
+    .filter(line => line.startsWith('data:'))
+    .map(line => line.slice(5).trim())
+
+  return dataLines.length > 0 ? dataLines.join('\n') : event.trim()
+}
+
+function parseJsonObject(payload: string): Record<string, any> | null {
+  try {
+    const parsed = JSON.parse(payload)
+    return typeof parsed === 'object' && parsed !== null ? parsed : null
+  } catch {
+    return null
+  }
 }
 
 function finalStreamChunk(id: string, created: number, model: string, kind: 'chat' | 'completion') {
