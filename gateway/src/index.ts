@@ -50,6 +50,9 @@ export default {
       return handleOpenAi(request, env, pathname)
     }
 
+    // Admin key management (GET/POST/DELETE /keys)
+    if (pathname === '/keys') return handleKeys(request, env)
+
     // Public GET routes
     if (request.method === 'GET') {
       if (pathname === '/models') return handleModels()
@@ -58,9 +61,6 @@ export default {
       if (pathname === '/') return handleDashboard(env)
       return new Response('Not found', { status: 404 })
     }
-
-    // Admin key management (GET/POST/DELETE /keys)
-    if (pathname === '/keys') return handleKeys(request, env)
 
     if (request.method !== 'POST') {
       return new Response('Method not allowed', { status: 405 })

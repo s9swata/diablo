@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { listen } from "@tauri-apps/api/event";
 import { Files, MagnifyingGlass, GitBranch } from "@phosphor-icons/react";
+import { useIndexStore } from "../store/index";
 
 function NavBtn({
   active,
@@ -58,6 +59,7 @@ export function StatusBar({
   onToggleGit: () => void;
 }) {
   const [lspProgress, setLspProgress] = useState<string | null>(null);
+  const { indexed, total, status } = useIndexStore();
 
   useEffect(() => {
     const unlisten = listen<{
@@ -118,6 +120,17 @@ export function StatusBar({
         {lspProgress && (
           <span className="flex items-center text-accent" style={{ marginLeft: 8, gap: 8 }}>
             <span className="animate-spin">●</span> {lspProgress}
+          </span>
+        )}
+
+        {status === "indexing" && (
+          <span className="flex items-center text-accent" style={{ marginLeft: 8, gap: 8 }}>
+            <span className="animate-spin">●</span> Indexing {indexed.toLocaleString()} / {total.toLocaleString()}
+          </span>
+        )}
+        {status === "ready" && (
+          <span className="flex items-center text-accent" style={{ marginLeft: 8, gap: 8 }}>
+            Index ready
           </span>
         )}
       </div>

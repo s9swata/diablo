@@ -1,7 +1,8 @@
 import { useEditorStore } from "../store/editor";
+import { ragSearch } from "./tools/rag";
 
 export async function buildContext(mode: "ask" | "edit" | "agent"): Promise<string> {
-  const { activeFile, openFiles, diagnostics } = useEditorStore.getState();
+  const { activeFile, openFiles, diagnostics, workspaceRoot } = useEditorStore.getState();
   const parts: string[] = [];
 
   if (activeFile) {
@@ -22,6 +23,23 @@ export async function buildContext(mode: "ask" | "edit" | "agent"): Promise<stri
         .map((d) => `  Line ${(d.range?.start?.line ?? 0) + 1}: ${d.message}`)
         .join("\n");
       parts.push(`<diagnostics path="${activeFile}">\n${formatted}\n</diagnostics>`);
+    }
+  }
+
+  if (mode === "agent" && workspaceRoot) {
+    try {
+      const activeContent = activeFile
+        ? openFiles.find((f) => f.path === activeFile)?.content ?? ""
+        : "";
+      const query = activeContent.slice(0, 2000);
+      if (query.trim()) {
+        const rag = await ragSearch({ query, k: 8, root: workspaceRoot });
+        if (rag) {
+          parts.push(`<rag_results>\n${rag}\n</rag_results>`);
+        }
+      }
+    } catch {
+      // RAG not available — skip
     }
   }
 

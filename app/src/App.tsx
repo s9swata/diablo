@@ -12,6 +12,7 @@ import { MonacoEditor } from "./editor/MonacoEditor";
 import { useEditorStore } from "./store/editor";
 import { useGitStore } from "./store/git";
 import { useAgentStore } from "./store/agent";
+import { useIndexStore } from "./store/index";
 import { MenuBar } from "./layout/MenuBar";
 import { StatusBar } from "./layout/StatusBar";
 import { Breadcrumb } from "./layout/Breadcrumb";
@@ -189,6 +190,7 @@ export default function App() {
   const [chatOpen, setChatOpen] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
   const { pendingDiffs } = useAgentStore();
+  const { setProgress } = useIndexStore();
   const dragRef = useRef<{ startX: number; startWidth: number } | null>(null);
   const gitDragRef = useRef<{ startY: number; startHeight: number } | null>(
     null,
@@ -266,6 +268,20 @@ export default function App() {
           break;
       }
     });
+    return () => {
+      unlisten.then((f) => f());
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Listen for index progress events
+  useEffect(() => {
+    const unlisten = listen<{ indexed: number; total: number }>(
+      "index_progress",
+      ({ payload }) => {
+        setProgress(payload.indexed, payload.total);
+      },
+    );
     return () => {
       unlisten.then((f) => f());
     };
@@ -442,6 +458,7 @@ export default function App() {
       if (typeof selected !== "string") return;
       setWorkspaceRoot(selected);
       await invoke("fs_watch", { path: selected });
+      invoke("index_start", { root: selected }).catch(() => {});
       root = selected;
     }
     const filePath = `${root}/${name}`;
@@ -454,6 +471,7 @@ export default function App() {
     if (typeof selected === "string") {
       setWorkspaceRoot(selected);
       await invoke("fs_watch", { path: selected });
+      invoke("index_start", { root: selected }).catch(() => {});
       refreshGit(selected);
     }
   }
