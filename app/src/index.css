@@ -1,14 +1,238 @@
 @import "tailwindcss";
+@source "./src";
+
+/* Workaround: macOS WebView hover gate fix */
+@custom-variant hover (&:hover);
+
+/* ─── Font Faces ─── */
+@font-face {
+  font-family: 'Geist';
+  src: url('../../node_modules/geist/dist/fonts/geist-sans/Geist-Variable.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
 
 @theme {
-  --color-bg-app: #0a0a0a;
-  --color-bg-sidebar: #121212;
-  --color-border-subtle: #262626;
-  --color-text-main: #e5e5e5;
-  --color-text-muted: #a3a3a3;
-  --color-primary: #3b82f6;
-  --color-hover: #1f1f1f;
-  --color-accent: #60a5fa;
+  /* ─── Clerk Colors ─── */
+  --color-void-black: #131316;
+  --color-fog-white: #f7f7f8;
+  --color-pure-white: #ffffff;
+  --color-graphite: #5e5f6e;
+  --color-ash: #747686;
+  --color-hairline: #d9d9de;
+  --color-mist: #eeeef0;
+  --color-stone: #9394a1;
+  --color-obsidian-card: #212126;
+  --color-dark-surface: #2f3037;
+  --color-slate-mid: #696a78;
+  --color-electric-violet: #6c47ff;
+  --color-violet-soft: #615cf6;
+  --color-cyan-spark: #5de3ff;
+
+  /* ─── Clerk Typography ─── */
+  --font-geist: 'Geist', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-inter: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-jetbrains-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  --text-caption: 10px;
+  --leading-caption: 1.4;
+  --text-heading-sm: 18px;
+  --leading-heading-sm: 1.4;
+  --tracking-heading-sm: -0.27px;
+  --text-heading: 20px;
+  --leading-heading: 1.25;
+  --tracking-heading: -0.3px;
+  --text-heading-lg: 32px;
+  --leading-heading-lg: 1.13;
+  --tracking-heading-lg: -1.12px;
+  --text-display: 64px;
+  --leading-display: 1;
+  --tracking-display: -2.24px;
+
+  --font-weight-regular: 400;
+  --font-weight-w450: 450;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* ─── Clerk Spacing ─── */
+  --spacing-unit: 4px;
+  --spacing-4: 4px;
+  --spacing-8: 8px;
+  --spacing-12: 12px;
+  --spacing-16: 16px;
+  --spacing-20: 20px;
+  --spacing-24: 24px;
+  --spacing-28: 28px;
+  --spacing-32: 32px;
+  --spacing-40: 40px;
+  --spacing-48: 48px;
+  --spacing-56: 56px;
+  --spacing-64: 64px;
+  --spacing-76: 76px;
+  --spacing-80: 80px;
+  --spacing-128: 128px;
+  --spacing-172: 172px;
+
+  /* ─── Clerk Border Radius ─── */
+  --radius-md: 6px;
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
+  --radius-3xl: 38px;
+  --radius-3xl-2: 44px;
+  --radius-full: 9999px;
+  --radius-tags: 9999px;
+  --radius-cards: 16px;
+  --radius-badges: 9999px;
+  --radius-inputs: 6px;
+  --radius-modals: 16px;
+  --radius-buttons: 6px;
+  --radius-cardsmall: 8px;
+  --radius-codeblocks: 12px;
+
+  /* ─── Clerk Shadows ─── */
+  --shadow-subtle: rgba(19, 19, 22, 0.05) 0px 0px 0px 1px, rgba(0, 0, 0, 0.08) 0px 5px 15px 0px, rgba(25, 28, 33, 0.2) 0px 15px 35px -5px;
+  --shadow-subtle-2: rgba(0, 0, 0, 0.1) 0px 1px 3px 0px, rgba(0, 0, 0, 0.1) 0px 1px 2px -1px;
+  --shadow-subtle-3: rgba(255, 255, 255, 0.05) 0px 0px 0px 1px inset;
+  --shadow-subtle-4: rgba(100, 229, 255, 0.08) 0px 0px 0px 1px inset;
+  --shadow-subtle-5: rgba(255, 255, 255, 0.024) 0px 1px 0px 0px inset, rgba(255, 255, 255, 0.024) 0px 0px 0px 1px inset;
+  --shadow-subtle-6: rgba(0, 0, 0, 0.08) 0px 0px 0px 1px, rgba(0, 0, 0, 0.02) 0px 1px 0px 0px, rgba(0, 0, 0, 0.08) 0px 2px 3px -1px;
+  --shadow-subtle-7: rgba(0, 0, 0, 0.24) 0px 1px 1px 0px, rgba(0, 0, 0, 0.2) 0px 2px 3px 0px, rgba(255, 255, 255, 0.07) 0px 1px 1px 0px inset, rgb(47, 48, 55) 0px 0px 0px 1px;
+  --shadow-subtle-8: rgba(255, 255, 255, 0.05) 0px 1px 0px 0px inset;
+  --shadow-subtle-9: rgba(0, 0, 0, 0.06) 0px 0px 0px 1px, rgba(0, 0, 0, 0.08) 0px 5px 15px 0px, rgba(47, 48, 55, 0.2) 0px 15px 35px -5px, rgba(34, 42, 53, 0.04) 0px 4px 6px 0px;
+  --shadow-subtle-10: rgba(0, 0, 0, 0.25) 0px 1px 2px 0px, rgba(255, 255, 255, 0.1) 0px 1px 0px 0px inset;
+  --shadow-subtle-11: rgba(0, 0, 0, 0.04) 0px 0px 0px 1px inset;
+  --shadow-subtle-12: rgba(0, 0, 0, 0.1) 0px 0px 0px 1px inset;
+  --shadow-subtle-13: rgb(217, 217, 222) 0px 0px 0px 0.5px, rgba(0, 0, 0, 0.06) 0px 1px 2px 0px, rgba(0, 0, 0, 0.08) 0px 0px 2px 0px;
+  --shadow-subtle-14: rgba(0, 0, 0, 0.11) 0px 0px 0px 1px, rgba(0, 0, 0, 0.07) 0px 0px 1px 0px;
+  --shadow-lg: rgba(0, 0, 0, 0.16) 0px 10px 19px 4px, rgba(255, 255, 255, 0.04) 0px -10px 16px -4px, rgba(255, 255, 255, 0.01) 0px 0px 0px 1px, rgba(255, 255, 255, 0.02) 0px 1px 0px 0px;
+
+  /* ─── Clerk Surfaces ─── */
+  --surface-page-canvas: #f7f7f8;
+  --surface-card-surface: #ffffff;
+  --surface-recessed-surface: #f7f7f8;
+  --surface-dark-canvas: #212126;
+  --surface-elevated-dark: #2f3037;
+
+  /* ─── Backward-compatible aliases (map old names to Clerk values) ─── */
+  --color-bg-app: var(--color-obsidian-card);
+  --color-bg-sidebar: var(--color-dark-surface);
+  --color-border-subtle: rgba(255, 255, 255, 0.06);
+  --color-text-main: var(--color-pure-white);
+  --color-text-muted: var(--color-slate-mid);
+  --color-primary: var(--color-electric-violet);
+  --color-hover: rgba(255, 255, 255, 0.05);
+  --color-accent: var(--color-cyan-spark);
+}
+
+/* ─── CSS Custom Properties for runtime access ─── */
+:root {
+  /* Colors */
+  --color-void-black: #131316;
+  --color-fog-white: #f7f7f8;
+  --color-pure-white: #ffffff;
+  --color-graphite: #5e5f6e;
+  --color-ash: #747686;
+  --color-hairline: #d9d9de;
+  --color-mist: #eeeef0;
+  --color-stone: #9394a1;
+  --color-obsidian-card: #212126;
+  --color-dark-surface: #2f3037;
+  --color-slate-mid: #696a78;
+  --color-electric-violet: #6c47ff;
+  --color-violet-soft: #615cf6;
+  --color-cyan-spark: #5de3ff;
+
+  /* Typography */
+  --font-geist: 'Geist', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-inter: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-jetbrains-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  --text-caption: 10px;
+  --leading-caption: 1.4;
+  --text-heading-sm: 18px;
+  --leading-heading-sm: 1.4;
+  --tracking-heading-sm: -0.27px;
+  --text-heading: 20px;
+  --leading-heading: 1.25;
+  --tracking-heading: -0.3px;
+  --text-heading-lg: 32px;
+  --leading-heading-lg: 1.13;
+  --tracking-heading-lg: -1.12px;
+  --text-display: 64px;
+  --leading-display: 1;
+  --tracking-display: -2.24px;
+
+  --font-weight-regular: 400;
+  --font-weight-w450: 450;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* Spacing */
+  --spacing-unit: 4px;
+  --spacing-4: 4px;
+  --spacing-8: 8px;
+  --spacing-12: 12px;
+  --spacing-16: 16px;
+  --spacing-20: 20px;
+  --spacing-24: 24px;
+  --spacing-28: 28px;
+  --spacing-32: 32px;
+  --spacing-40: 40px;
+  --spacing-48: 48px;
+  --spacing-56: 56px;
+  --spacing-64: 64px;
+  --spacing-76: 76px;
+  --spacing-80: 80px;
+  --spacing-128: 128px;
+  --spacing-172: 172px;
+
+  /* Layout */
+  --page-max-width: 1200px;
+  --section-gap: 80px;
+  --element-gap: 8px;
+
+  /* Border Radius */
+  --radius-md: 6px;
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
+  --radius-3xl: 38px;
+  --radius-3xl-2: 44px;
+  --radius-full: 9999px;
+  --radius-tags: 9999px;
+  --radius-cards: 16px;
+  --radius-badges: 9999px;
+  --radius-inputs: 6px;
+  --radius-modals: 16px;
+  --radius-buttons: 6px;
+  --radius-cardsmall: 8px;
+  --radius-codeblocks: 12px;
+
+  /* Shadows */
+  --shadow-subtle: rgba(19, 19, 22, 0.05) 0px 0px 0px 1px, rgba(0, 0, 0, 0.08) 0px 5px 15px 0px, rgba(25, 28, 33, 0.2) 0px 15px 35px -5px;
+  --shadow-subtle-2: rgba(0, 0, 0, 0.1) 0px 1px 3px 0px, rgba(0, 0, 0, 0.1) 0px 1px 2px -1px;
+  --shadow-subtle-3: rgba(255, 255, 255, 0.05) 0px 0px 0px 1px inset;
+  --shadow-subtle-4: rgba(100, 229, 255, 0.08) 0px 0px 0px 1px inset;
+  --shadow-subtle-5: rgba(255, 255, 255, 0.024) 0px 1px 0px 0px inset, rgba(255, 255, 255, 0.024) 0px 0px 0px 1px inset;
+  --shadow-subtle-6: rgba(0, 0, 0, 0.08) 0px 0px 0px 1px, rgba(0, 0, 0, 0.02) 0px 1px 0px 0px, rgba(0, 0, 0, 0.08) 0px 2px 3px -1px;
+  --shadow-subtle-7: rgba(0, 0, 0, 0.24) 0px 1px 1px 0px, rgba(0, 0, 0, 0.2) 0px 2px 3px 0px, rgba(255, 255, 255, 0.07) 0px 1px 1px 0px inset, rgb(47, 48, 55) 0px 0px 0px 1px;
+  --shadow-subtle-8: rgba(255, 255, 255, 0.05) 0px 1px 0px 0px inset;
+  --shadow-subtle-9: rgba(0, 0, 0, 0.06) 0px 0px 0px 1px, rgba(0, 0, 0, 0.08) 0px 5px 15px 0px, rgba(47, 48, 55, 0.2) 0px 15px 35px -5px, rgba(34, 42, 53, 0.04) 0px 4px 6px 0px;
+  --shadow-subtle-10: rgba(0, 0, 0, 0.25) 0px 1px 2px 0px, rgba(255, 255, 255, 0.1) 0px 1px 0px 0px inset;
+  --shadow-subtle-11: rgba(0, 0, 0, 0.04) 0px 0px 0px 1px inset;
+  --shadow-subtle-12: rgba(0, 0, 0, 0.1) 0px 0px 0px 1px inset;
+  --shadow-subtle-13: rgb(217, 217, 222) 0px 0px 0px 0.5px, rgba(0, 0, 0, 0.06) 0px 1px 2px 0px, rgba(0, 0, 0, 0.08) 0px 0px 2px 0px;
+  --shadow-subtle-14: rgba(0, 0, 0, 0.11) 0px 0px 0px 1px, rgba(0, 0, 0, 0.07) 0px 0px 1px 0px;
+  --shadow-lg: rgba(0, 0, 0, 0.16) 0px 10px 19px 4px, rgba(255, 255, 255, 0.04) 0px -10px 16px -4px, rgba(255, 255, 255, 0.01) 0px 0px 0px 1px, rgba(255, 255, 255, 0.02) 0px 1px 0px 0px;
+
+  /* Surfaces */
+  --surface-page-canvas: #f7f7f8;
+  --surface-card-surface: #ffffff;
+  --surface-recessed-surface: #f7f7f8;
+  --surface-dark-canvas: #212126;
+  --surface-elevated-dark: #2f3037;
 }
 
 *,
@@ -25,8 +249,8 @@ body,
   height: 100%;
   width: 100%;
   overflow: hidden;
-  background-color: var(--color-bg-app);
-  color: var(--color-text-main);
-  font-family: 'Segoe UI', system-ui, sans-serif;
+  background-color: var(--color-obsidian-card);
+  color: var(--color-pure-white);
+  font-family: var(--font-geist);
   font-size: 13px;
 }
