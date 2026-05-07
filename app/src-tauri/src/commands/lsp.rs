@@ -15,7 +15,6 @@ fn lsp_path(app: &AppHandle) -> String {
     let path = format!(
         "{home}/.cargo/bin:/usr/local/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/bin:/bin:{system}"
     );
-    eprintln!("[lsp_path] PATH={}", path);
     path
 }
 
@@ -44,9 +43,6 @@ pub async fn lsp_start(
     let home = app.path().home_dir().ok()
         .map(|h| h.to_string_lossy().into_owned())
         .unwrap_or_default();
-
-    eprintln!("[lsp_start] command={} args={:?} workspace={}", command, args, workspace_root);
-    eprintln!("[lsp_start] PATH env={}", lsp_path(&app));
 
     let mut child = Command::new(&command)
         .args(&args)

@@ -1,6 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
-import type * as Monaco from "monaco-editor";
 import { useEditorStore } from "../store/editor";
 
 interface LspMsg {
@@ -18,7 +17,7 @@ interface ServerSpec {
   args: string[];
 }
 
-const SUPPORTED_LANGUAGES = new Set(["rust", "typescript", "javascript", "python", "cpp", "c"]);
+const SUPPORTED_LANGUAGES = new Set(["rust", "typescript", "javascript", "python", "cpp", "c", "go"]);
 
 const CLIENT_CAPABILITIES = {
   textDocument: {
@@ -32,6 +31,36 @@ const CLIENT_CAPABILITIES = {
     },
     definition: { linkSupport: false },
     publishDiagnostics: { relatedInformation: false },
+    semanticTokens: {
+      requests: { full: true, range: false },
+      tokenTypes: [
+        "namespace", "type", "class", "enum", "interface", "struct",
+        "typeParameter", "parameter", "variable", "property", "enumMember",
+        "event", "function", "method", "macro", "keyword", "modifier",
+        "comment", "string", "number", "regexp", "operator", "decorator",
+      ],
+      tokenModifiers: [
+        "declaration", "definition", "readonly", "static", "deprecated",
+        "abstract", "async", "modification", "documentation", "defaultLibrary",
+      ],
+      formats: ["relative"],
+      overlappingTokenSupport: false,
+      multilineTokenSupport: false,
+    },
+    signatureHelp: {
+      signatureInformation: {
+        documentationFormat: ["markdown", "plaintext"],
+        parameterInformation: { labelOffsetSupport: true },
+      },
+    },
+    codeAction: {
+      codeActionLiteralSupport: {
+        codeActionKind: {
+          valueSet: ["", "quickfix", "refactor", "refactor.extract", "refactor.inline", "refactor.rewrite", "source"],
+        },
+      },
+    },
+    diagnostic: { dynamicRegistration: false },
   },
 };
 
@@ -86,17 +115,31 @@ class LspClient {
     return v;
   }
 
-  async ensureStarted(language: string): Promise<string | null> {
+  async ensureStarted(language: string, filePath?: string): Promise<string | null> {
     const { workspaceRoot } = useEditorStore.getState();
     if (!workspaceRoot) return null;
     if (!SUPPORTED_LANGUAGES.has(language)) return null;
+
+    // serverId is always keyed to workspaceRoot so all callers (providers, file-open)
+    // hit the same cache entry regardless of whether filePath was supplied.
     const serverId = `${workspaceRoot}:${language}`;
 
     if (this.activeServers.has(serverId)) return serverId;
     if (this.failedServers.has(serverId)) return null;
     if (this.starting.has(serverId)) return this.starting.get(serverId)!;
 
-    const p = this._doStart(serverId, language, workspaceRoot);
+    // Resolve the nearest manifest directory for the rootUri sent to lsp_start.
+    // Falls back to workspaceRoot when no manifest is found or no filePath given.
+    let projectRoot = workspaceRoot;
+    if (filePath) {
+      try {
+        projectRoot = await invoke<string>("resolve_workspace_root", { filePath, language });
+      } catch {
+        projectRoot = workspaceRoot;
+      }
+    }
+
+    const p = this._doStart(serverId, language, projectRoot);
     this.starting.set(serverId, p);
     const result = await p;
     this.starting.delete(serverId);
@@ -150,13 +193,13 @@ class LspClient {
     });
   }
 
-  // Use Monaco's CancellationToken so requests cancel when user moves cursor.
+  // AbortSignal cancels in-flight requests (e.g. cursor moved, new keystroke).
   // Hard timeout is a last-resort fallback for unresponsive servers.
   async request(
     serverId: string,
     method: string,
     params: unknown,
-    token?: Monaco.CancellationToken,
+    signal?: AbortSignal,
   ): Promise<unknown> {
     const id = this.nextId++;
     const msg = JSON.stringify({ jsonrpc: "2.0", id, method, params });
@@ -166,31 +209,32 @@ class LspClient {
     return new Promise((resolve, reject) => {
       this.pending.set(id, { resolve, reject });
 
-      // Cancel via Monaco token (cursor moved, new keystroke, etc.)
-      const cancelDisposable = token?.onCancellationRequested(() => {
+      const cancel = () => {
         if (this.pending.has(id)) {
           this.pending.delete(id);
           this.notify(serverId, "$/cancelRequest", { id }).catch(() => {});
           reject(new Error("cancelled"));
         }
-      });
+      };
+
+      signal?.addEventListener("abort", cancel, { once: true });
 
       // Hard fallback — only if server never responds at all
       const timer = setTimeout(() => {
         if (this.pending.has(id)) {
           this.pending.delete(id);
-          cancelDisposable?.dispose();
+          signal?.removeEventListener("abort", cancel);
           console.warn("[lsp] hard timeout", method, `id=${id}`);
           reject(new Error("LSP request timeout"));
         }
       }, HARD_TIMEOUT_MS);
 
-      // Clean up timer when resolved/rejected normally
+      // Clean up on normal resolve/reject
       const origResolve = resolve;
       const origReject = reject;
       this.pending.set(id, {
-        resolve: (v) => { clearTimeout(timer); cancelDisposable?.dispose(); origResolve(v); },
-        reject: (e) => { clearTimeout(timer); cancelDisposable?.dispose(); origReject(e); },
+        resolve: (v) => { clearTimeout(timer); signal?.removeEventListener("abort", cancel); origResolve(v); },
+        reject: (e) => { clearTimeout(timer); signal?.removeEventListener("abort", cancel); origReject(e); },
       });
     });
   }

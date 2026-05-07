@@ -11,7 +11,6 @@ export interface Settings {
   fontSize: number;
   tabSize: number;
   wordWrap: "on" | "off";
-  minimap: boolean;
 }
 
 const SETTINGS_KEY = "diablo_settings";
@@ -25,7 +24,7 @@ function loadSettings(): Settings {
 }
 
 function defaultSettings(): Settings {
-  return { theme: "vs-dark", fontSize: 14, tabSize: 2, wordWrap: "off", minimap: false };
+  return { theme: "vs-dark", fontSize: 14, tabSize: 2, wordWrap: "off" };
 }
 
 function saveSettings(s: Settings) {

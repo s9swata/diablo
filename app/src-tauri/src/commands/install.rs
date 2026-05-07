@@ -333,16 +333,17 @@ async fn ensure_typescript_server(app: &AppHandle, servers_dir: &Path) -> Result
 // ── Python (Pyright) ────────────────────────────────────────────────────────
 
 async fn ensure_pyright(app: &AppHandle, servers_dir: &Path) -> Result<ServerSpec> {
-    emit(app, "python", "Checking for pyright...", None);
+    emit(app, "python", "Checking for pyright-langserver...", None);
 
-    if let Some(p) = find_binary("pyright").await {
-        emit(app, "python", "pyright found", None);
-        return Ok(ServerSpec { command: p, args: vec![] });
+    // pyright-langserver is the LSP binary; "pyright" is just the CLI type-checker
+    if let Some(p) = find_binary("pyright-langserver").await {
+        emit(app, "python", "pyright-langserver found", None);
+        return Ok(ServerSpec { command: p, args: vec!["--stdio".into()] });
     }
 
-    if let Some(p) = find_binary_in_dir("pyright", servers_dir).await {
-        emit(app, "python", "pyright found", None);
-        return Ok(ServerSpec { command: p, args: vec![] });
+    if let Some(p) = find_binary_in_dir("pyright-langserver", servers_dir).await {
+        emit(app, "python", "pyright-langserver found", None);
+        return Ok(ServerSpec { command: p, args: vec!["--stdio".into()] });
     }
 
     emit(app, "python", "Installing Node.js...", None);
@@ -367,12 +368,12 @@ async fn ensure_pyright(app: &AppHandle, servers_dir: &Path) -> Result<ServerSpe
         return Err(anyhow!("Failed to install pyright"));
     }
 
-    if let Some(p) = find_binary_in_dir("pyright", servers_dir).await {
+    if let Some(p) = find_binary_in_dir("pyright-langserver", servers_dir).await {
         emit(app, "python", "pyright ready", None);
-        return Ok(ServerSpec { command: p, args: vec![] });
+        return Ok(ServerSpec { command: p, args: vec!["--stdio".into()] });
     }
 
-    Err(anyhow!("pyright not found after installation"))
+    Err(anyhow!("pyright-langserver not found after installation"))
 }
 
 // ── C++ (Clangd) ─────────────────────────────────────────────────────────────
@@ -425,6 +426,44 @@ async fn ensure_clangd(app: &AppHandle, servers_dir: &Path) -> Result<ServerSpec
     Ok(ServerSpec { command: bin_dir.join("clangd").to_string_lossy().into(), args: vec![] })
 }
 
+// ── Go (gopls) ───────────────────────────────────────────────────────────────
+
+async fn ensure_gopls(app: &AppHandle, servers_dir: &Path) -> Result<ServerSpec> {
+    emit(app, "go", "Checking for gopls...", None);
+
+    if let Some(p) = find_binary("gopls").await {
+        emit(app, "go", "gopls found", None);
+        return Ok(ServerSpec { command: p, args: vec![] });
+    }
+
+    let local_bin = servers_dir.join("bin").join("gopls");
+    if local_bin.exists() {
+        emit(app, "go", "gopls found", None);
+        return Ok(ServerSpec { command: local_bin.to_string_lossy().into(), args: vec![] });
+    }
+
+    // Try `go install` if go is available
+    emit(app, "go", "Installing gopls via go install...", None);
+    if let Some(go_bin) = find_binary("go").await {
+        let bin_dir = servers_dir.join("bin");
+        tokio::fs::create_dir_all(&bin_dir).await?;
+        let status = Command::new(&go_bin)
+            .args(["install", "golang.org/x/tools/gopls@latest"])
+            .env("GOBIN", &bin_dir)
+            .status()
+            .await?;
+
+        if status.success() {
+            if local_bin.exists() {
+                emit(app, "go", "gopls ready", None);
+                return Ok(ServerSpec { command: local_bin.to_string_lossy().into(), args: vec![] });
+            }
+        }
+    }
+
+    Err(anyhow!("gopls not found. Install Go and run: go install golang.org/x/tools/gopls@latest"))
+}
+
 // ── Public Command ───────────────────────────────────────────────────────────
 
 #[tauri::command]
@@ -440,6 +479,7 @@ pub async fn lsp_ensure(app: AppHandle, language: String) -> Result<ServerSpec, 
         "typescript" | "javascript" => ensure_typescript_server(&app, &servers_dir).await,
         "python" => ensure_pyright(&app, &servers_dir).await,
         "cpp" | "c" | "c++" => ensure_clangd(&app, &servers_dir).await,
+        "go" => ensure_gopls(&app, &servers_dir).await,
         _ => Err(anyhow!("No LSP server available for language: {language}")),
     }
     .map_err(|e| e.to_string())

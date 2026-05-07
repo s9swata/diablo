@@ -5,3 +5,4 @@ pub mod install;
 pub mod lsp;
 pub mod pty;
 pub mod search;
+pub mod workspace;

@@ -8,7 +8,7 @@ import { GitPanel } from "./panels/GitPanel";
 import { TerminalPane } from "./panels/TerminalPane";
 import { ChatPanel } from "./panels/ChatPanel";
 import { DiffReview } from "./panels/DiffReview";
-import { MonacoEditor } from "./editor/MonacoEditor";
+import { CodeMirrorEditor } from "./editor/CodeMirrorEditor";
 import { useEditorStore } from "./store/editor";
 import { useGitStore } from "./store/git";
 import { useAgentStore } from "./store/agent";
@@ -175,7 +175,6 @@ export default function App() {
     activeFile,
     workspaceRoot,
     updateSettings,
-    settings,
   } = useEditorStore();
   const [showNewFileModal, setShowNewFileModal] = useState(false);
   const [dirtyCloseTarget, setDirtyCloseTarget] = useState<string | null>(null);
@@ -243,7 +242,7 @@ export default function App() {
           setTerminalVisible((v) => !v);
           break;
         case "view_minimap":
-          store.updateSettings({ minimap: !store.settings.minimap });
+          // minimap removed — no-op
           break;
         case "view_wordwrap":
           store.updateSettings({
@@ -505,10 +504,10 @@ export default function App() {
         panels={{
           sidebarVisible,
           terminalVisible,
-          minimapVisible: settings.minimap,
+          minimapVisible: false,
           onToggleSidebar: () => setSidebarVisible((v) => !v),
           onToggleTerminal: () => setTerminalVisible((v) => !v),
-          onToggleMinimap: () => updateSettings({ minimap: !settings.minimap }),
+          onToggleMinimap: () => {},
         }}
       />
 
@@ -521,7 +520,7 @@ export default function App() {
               className="bg-bg-sidebar border-r border-border-subtle flex flex-col shrink-0 overflow-hidden"
             >
               {/* File Explorer — always visible, grows to fill remaining space */}
-              <div style={{ flex: 1, overflow: "hidden", minHeight: 80 }}>
+              <div style={{ flex: 1, minHeight: 80, overflow: "hidden", display: "flex", flexDirection: "column" }}>
                 <FileExplorer />
               </div>
 
@@ -603,7 +602,7 @@ export default function App() {
             )}
             {/* Editor / welcome screen always rendered underneath */}
             {activeFile ? (
-              <MonacoEditor
+              <CodeMirrorEditor
                 onCursorChange={setCursorPos}
                 onLanguageChange={setLanguage}
               />

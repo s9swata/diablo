@@ -12,6 +12,7 @@ use commands::git::{
 use commands::install::lsp_ensure;
 use commands::index::{index_delete, index_search, index_start, WatcherState};
 use commands::lsp::{lsp_send, lsp_start, lsp_stop};
+use commands::workspace::resolve_workspace_root;
 use commands::pty::{pty_kill, pty_resize, pty_spawn, pty_write, PtyState};
 use commands::search::search_in_files;
 use lsp::manager::LspManagerState;
@@ -168,6 +169,7 @@ pub fn run() {
             git_status, git_diff_file, git_stage, git_unstage, git_discard,
             git_commit, git_push, git_pull, git_log,
             index_start, index_search, index_delete,
+            resolve_workspace_root,
         ])
         .setup(|app| {
             let menu = build_menu(app.handle())?;
